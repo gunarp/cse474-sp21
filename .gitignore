@@ -80,7 +80,8 @@ dkms.conf
 # Executables
 
 ### vscode ###
-.vscode/*
+.vscode/
+**/.vscode/*
 !.vscode/settings.json
 !.vscode/arduino.json
 !.vscode/tasks.json
