@@ -1,0 +1,17 @@
+[
+  {
+    "Sourcefile": null,
+    "Include": "",
+    "Includepath": "C:\\Users\\redba_000\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.3\\cores\\arduino"
+  },
+  {
+    "Sourcefile": null,
+    "Include": "",
+    "Includepath": "C:\\Users\\redba_000\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.3\\variants\\mega"
+  },
+  {
+    "Sourcefile": "c:\\Users\\redba_000\\OneDrive - UW\\474\\lab1\\ArduinoOutput\\sketch\\5.1.ino.cpp",
+    "Include": "",
+    "Includepath": null
+  }
+]

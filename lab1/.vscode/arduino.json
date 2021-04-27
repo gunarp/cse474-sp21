@@ -1,0 +1,7 @@
+{
+    "configuration": "cpu=atmega2560",
+    "board": "arduino:avr:mega",
+    "port": "COM4",
+    "output": "./ArduinoOutput",
+    "sketch": "5.1/5.1.ino"
+}
