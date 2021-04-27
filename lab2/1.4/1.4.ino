@@ -18,16 +18,16 @@ void setup() {
 
 // the loop function runs over and over again forever
 void loop() {
-  DDRL |= BIT2;
-  DDRL &= ~BIT1;
-  DDRL &= ~BIT0;
+  PORTL &= ~BIT2;
+  PORTL |= BIT1;
+  PORTL |= BIT0;
   delay(333);                       // wait for a second
-  DDRL &= ~BIT2;
-  DDRL |= BIT1;
-  DDRL &= ~BIT0;
+  PORTL |= BIT2;
+  PORTL &= ~BIT1;
+  PORTL |= BIT0;
   delay(333);
-  DDRL &= ~BIT2;
-  DDRL &= ~BIT1;
-  DDRL |= BIT0;
+  PORTL |= BIT2;
+  PORTL |= BIT1;
+  PORTL &= ~BIT0;
   delay(333);                       // wait for a second
 }
