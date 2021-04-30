@@ -20,6 +20,7 @@ int CLK = 50;
 
 int posX;
 int posY;
+int resetM = 0;
 
 byte spidata[16]; //spi shift register uses 16 bits, 8 for ctrl and 8 for data
 
@@ -43,25 +44,38 @@ void setup(){
   
 }
 
+void taskMATRIX() {
+  static unsigned long time;
+  time++;
+
+  if (resetM) {
+    // calculate bit shift for display
+    int dispX = -posX + MAX;
+  
+    // turn the LED at (x, y) on
+    spiTransfer(posY, (byte)(1 << dispX));
+  }
+
+  if (time == 50) {
+    // turn LED at (x, y) off (technically, this clears the whole row.)
+    spiTransfer(posY, (byte)0);
+    
+    posX = analogRead(A5) / 128;
+    posY = analogRead(A3) / 128;
+  
+    // calculate bit shift for display
+    int dispX = -posX + MAX;
+  
+    // turn the LED at (x, y) on
+    spiTransfer(posY, (byte)(1 << dispX));
+
+    time = 0;
+  }
+  return;  
+}
+
 void loop() {  
-  posX = analogRead(A5) / 128;
-  posY = analogRead(A3) / 128;
-
-//  Serial.print("X position is ");
-//  Serial.println(posX);
-//  Serial.print("Y position is ");
-//  Serial.println(posY);
-
-  // calculate bit shift for display
-  int dispX = -posX + MAX;
-
-  // turn the LED at (x, y) on
-  spiTransfer(posY, (byte)(1 << dispX));
-
-  delay(50);
-
-  // turn LED at (x, y) off (technically, this clears the whole row.)
-  spiTransfer(posY, (byte)0);
+  taskMATRIX();
 }
 
 // from LED_Matrix.ino
