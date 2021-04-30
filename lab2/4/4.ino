@@ -10,9 +10,16 @@
 void spiTransfer(volatile byte row, volatile byte data);
 
 // change these pins as necessary
-int DIN = 47;
-int CS =  49;
-int CLK = 51;
+//int DIN = 47;
+//int CS =  49;
+//int CLK = 51;
+
+int DIN = 45;
+int CS =  38;
+int CLK = 50;
+
+int posX;
+int posY;
 
 byte spidata[16]; //spi shift register uses 16 bits, 8 for ctrl and 8 for data
 
@@ -23,28 +30,45 @@ void setup(){
   pinMode(CS, OUTPUT);
   pinMode(CLK, OUTPUT);
   digitalWrite(CS, HIGH);
-  spiTransfer(OP_DISPLAYTEST,0);
-  spiTransfer(OP_SCANLIMIT,7);
-  spiTransfer(OP_DECODEMODE,0);
-  spiTransfer(OP_SHUTDOWN,1);
+  
+  pinMode(A3, INPUT);
+  pinMode(A5, INPUT);
+  //Serial.begin(9600);
 
-  int startX = 4;
-  int startY = 4;
+  // turn matrix display off
+  for (int i = 0; i < 8; i++) {
+    spiTransfer(i, (byte)0);
+    //spiTransfer(i, 0b11000000);
+  }
+  
 }
 
-// void setup() {
-//   // declare the pins here for the joystick controller
-//   // set CS to high thru directly changing the hw register
-// }
+void loop() {  
+  posX = analogRead(A5) / 128;
+  posY = analogRead(A3) / 128;
 
-void loop() {
-  int xInc = analogRead(x pin) / 128;
-  int yInc = analogRead(y pin) / 128;
+//  Serial.print("X position is ");
+//  Serial.println(posX);
+//  Serial.print("Y position is ");
+//  Serial.println(posY);
 
-  startX +=
+  // calculate bit shift for display
+  int dispX = -posX + MAX;
+
+  // turn the LED at (x, y) on
+  spiTransfer(posY, (byte)(1 << dispX));
+
+  delay(50);
+
+  // turn LED at (x, y) off (technically, this clears the whole row.)
+  spiTransfer(posY, (byte)0);
 }
 
 // from LED_Matrix.ino
+// 
+// this function turns on a collection of LEDs on, with
+// opcode selecting the row, and data being the values
+// for the entire row. 
 void spiTransfer(volatile byte opcode, volatile byte data){
   int offset = 0; //only 1 device
   int maxbytes = 16;
