@@ -28,6 +28,7 @@ void taskA() {
   static unsigned long time;
   time++;
 
+  // reset everything given a reset signal
   if (resetA) {
     LED_PORT |= BIT2;
     LED_PORT |= BIT1;
@@ -37,18 +38,21 @@ void taskA() {
     return;
   }
 
+  // flash led on pin 47 for FLASH_DURATIOn
   if (time == (0 * FLASH_DURATION) + 1) {
     LED_PORT &= ~BIT2;
     LED_PORT |= BIT1;
     LED_PORT |= BIT0;
   }
 
+  // flash led on pin 48 for FLASH_DURATION
   if (time == (1 * FLASH_DURATION) + 1) {
     LED_PORT |= BIT2;
     LED_PORT &= ~BIT1;
     LED_PORT |= BIT0;
   }
 
+  // flash led on pin 49 for FLASH_DURATION
   if (time == (2 * FLASH_DURATION) + 1) {
     LED_PORT |= BIT2;
     LED_PORT |= BIT1;

@@ -66,12 +66,53 @@ int melody[] = { note_e, note_R, note_d, note_R, note_c, note_R, note_d, note_R,
 // ========================================================
 // function prototypes
 // ========================================================
-// timing details for Matrix operation
+/***************************************************
+ * void taskMATRIX();
+ *      Handles the timing of the LED Matrix operation, using
+ *      the connected joystick to control the lit dot in the matrix.
+ *
+ *      Author Sunny Hu
+ */
+
 void taskMATRIX();
-// timing details for speaker operation
+/***************************************************
+ * void taskB();
+ *      Handles the timing of the speaker operation, cycles
+ *      through notes in melody, with each tone playing
+ *      for PLAY_DURATION milliseconds
+ *
+ *      Author Peter Gunarso
+ */
+
 void taskB();
-// utility function which sets the output of OC4A to
-// match a given frequency
+/***************************************************
+ * void setOC4AFreq(uint32_t freq)
+ *      freq - The desired output frequency for OC4A
+ *      Returns - Nothing, but sets the clock cycle frequency
+ *                of OC4A to be freq
+ *
+ *      Sets the prescaler of the OC4A clock to make OC4A go at a
+ *      frequency of freq. Follows the equation:
+ *
+ *      f_out = f_i/o / 2 * N * (PRESCALER + 1)
+ *
+ *      and assumes N=1
+ *
+ *      Author Peter Gunarso
+ *
+ */
 void setOC4AFreq(uint32_t);
-// utility function which operates the lights on the LED matrix
+
+/***************************************************
+ * void spiTransfer(volatile byte opcode, voltatile byte data)
+ *      opcode - row selector
+ *      data - row data
+ *
+ *      this function turns on a collection of LEDs on, with
+ *      opcode selecting the row, and data being the values
+ *      for the entire row.
+ *
+ *      Author Ishaan Bhimani
+ *
+ */
 void spiTransfer(volatile byte, volatile byte);
