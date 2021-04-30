@@ -1,8 +1,20 @@
+/* University of Washington
+ * ECE/CSE 474,  [4/29]
+ *
+ *   Sunny Hu
+ *   Peter Gunarso
+ *
+ *   Lab 2, Task 1.4
+ *
+ *
+ *   Acknowledgements:
+ *    Tutorial on how to drive the ports manually
+ *      https://wiki.wpi.edu/robotics/Port_manipulation_and_digitalWrite()#The_easy_way
+ */
+
 // 49 -> PL0
 // 48 -> PL1
 // 47 -> PL2
-
-// source: https://wiki.wpi.edu/robotics/Port_manipulation_and_digitalWrite()#The_easy_way
 
 #define BIT0 1<<0;
 #define BIT1 1<<1;

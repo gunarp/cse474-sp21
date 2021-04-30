@@ -1,3 +1,13 @@
+/* University of Washington
+ * ECE/CSE 474,  [4/29]
+ *
+ *   Sunny Hu
+ *   Peter Gunarso
+ *
+ *   Lab 2, Task 2.4
+ *
+ */
+
 #define BIT3 1 << 3;
 
 // sets the OCR4A to make the clock cycle frequency

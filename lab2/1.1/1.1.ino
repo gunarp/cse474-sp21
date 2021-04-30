@@ -1,3 +1,13 @@
+/* University of Washington
+ * ECE/CSE 474,  [4/29]
+ *
+ *   Sunny Hu
+ *   Peter Gunarso
+ *
+ *   Lab 2, Task 2.4
+ *
+ */
+
 // the setup function runs once when you press reset or power the board
 void setup() {
   // initialize digital pin LED_BUILTIN as an output.
