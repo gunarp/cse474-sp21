@@ -15,9 +15,7 @@
 
 #define FLASH_DURATION 333
 #define NFLASH 3
-#define PLAY_DURATION 1000
-#define NFREQ 53
-// #define NFREQ 4
+#define PLAY_DURATION 200
 #define ADURATION 2000
 #define CDURATION 10000
 
@@ -31,12 +29,15 @@
 #define note_C 523
 #define note_R 0
 
+#define NFREQ 53
+// #define NFREQ 4
 int melody[] = { note_e, note_R, note_d, note_R, note_c, note_R, note_d, note_R,
-                 note_e, note_R,note_e, note_R,note_e, note_R,note_d, note_R,note_d,
-                 note_R,note_d, note_R,note_e, note_R,note_g, note_R,note_g, note_R,
-                 note_e, note_R,note_d, note_R,note_c, note_R,note_d, note_R,note_e,
-                 note_R,note_e, note_R,note_e, note_R,note_e, note_R,note_d, note_R,
-                 note_d, note_R,note_e, note_R,note_d, note_R,note_c, note_R,note_c };
+                 note_e, note_R, note_e, note_R, note_e, note_R, note_d, note_R,
+                 note_d, note_R, note_d, note_R, note_e, note_R, note_g, note_R,
+                 note_g, note_R, note_e, note_R, note_d, note_R, note_c, note_R,
+                 note_d, note_R, note_e, note_R, note_e, note_R, note_e, note_R,
+                 note_e, note_R, note_d, note_R, note_d, note_R, note_e, note_R,
+                 note_d, note_R, note_c, note_R, note_c };
 // int melody[] = {400, 250, 800, 0};
 
 uint32_t t1 = ADURATION;
@@ -48,7 +49,7 @@ int resetB = 0;
 
 // sets the OCR4A to make the clock cycle frequency
 // the same as the input freq
-void freq2OCR4A(uint32_t freq) {
+void setOC4AFreq(uint32_t freq) {
   PRESCALER = freq == 0 ? 0 : 16000000 / (2 * freq);
   TIMER_COUNTER = 0;
 }
@@ -99,7 +100,7 @@ void taskB() {
   time++;
 
   if (resetB) {
-    freq2OCR4A(0);
+    setOC4AFreq(0);
     time = 0;
     resetB = 0;
     return;
@@ -107,7 +108,7 @@ void taskB() {
 
   for (int i = 0; i < NFREQ; i++) {
     if (time == ((unsigned long) i * PLAY_DURATION) + 1) {
-      freq2OCR4A(melody[i]);
+      setOC4AFreq(melody[i]);
     }
   }
 
@@ -146,7 +147,7 @@ void taskC() {
 }
 
 void setup() {
-    // clear timer settings
+  // clear timer settings
   TIMER_REG_A = 0;
   TIMER_REG_B = 0;
   // set our timer to work in CTC mode
@@ -177,8 +178,6 @@ void setup() {
   LED_DDR |= BIT0;
   LED_DDR |= BIT1;
   LED_DDR |= BIT2;
-  // set up our function table
-  Serial.begin(9600);
 }
 
 void loop() {
