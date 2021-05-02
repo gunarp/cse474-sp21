@@ -13,6 +13,7 @@
 uint32_t t1 = ADURATION;
 uint32_t t2 = t1 + (uint32_t) NFREQ * (PLAY_DURATION);
 uint32_t t3 = t2 + CDURATION;
+uint32_t t4 = t3 + 1000;
 
 int resetA = 0;
 int resetB = 0;
@@ -111,7 +112,14 @@ void taskC() {
     return;
   }
 
-  if (time > t3) {
+  if (time <= t4) {
+    resetA = 1;
+    resetB = 1;
+    taskA();
+    taskB();
+  }
+
+  if (time > t4) {
     resetB = 1;
     taskB();
     time = 0;
