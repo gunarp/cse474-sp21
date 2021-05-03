@@ -69,7 +69,6 @@ void LEDMatrixSetup() {
 void setup(){
   OC4ASetup();
   LEDMatrixSetup();
-  Serial.begin(9600);
 }
 
 void loop() {
