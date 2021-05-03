@@ -12,7 +12,7 @@
 
 // sets the OCR4A to make the clock cycle frequency
 // the same as the input freq
-void freq2OCR4A(uint32_t freq) {
+void setOC4AFreq(uint32_t freq) {
   OCR4A = freq == 0 ? 0 : 16000000 / (2 * freq);
   TCNT4H = 0;
 }
@@ -21,10 +21,10 @@ void freq2OCR4A(uint32_t freq) {
 void playOneSec(int freq) {
   uint32_t maxHalfPeriods = 2 * (uint32_t) freq;
   if (freq == 0) {
-    freq2OCR4A(100000);
+    setOC4AFreq(100000);
     maxHalfPeriods = 2 * 100000;
   } else {
-    freq2OCR4A(freq);
+    setOC4AFreq(freq);
   }
   uint32_t countHalfPeriods = 0;
   while (countHalfPeriods < maxHalfPeriods) {
