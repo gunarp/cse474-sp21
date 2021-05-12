@@ -19,23 +19,13 @@
 #define ADURATION 2000
 #define CDURATION 10000
 
-#define note_c 261
-#define note_d 294
-#define note_e 329
-#define note_f 349
-#define note_g 392
-#define note_a 440
-#define note_b 493
-#define note_C 523
+#define note_c3 130
+#define note_c4 261
+#define note_d4 293
+#define note_e4 329
+#define note_g3 196
 #define note_R 0
 
-#define NFREQ 53
-// #define NFREQ 4
-int melody[] = { note_e, note_R, note_d, note_R, note_c, note_R, note_d, note_R,
-                 note_e, note_R, note_e, note_R, note_e, note_R, note_d, note_R,
-                 note_d, note_R, note_d, note_R, note_e, note_R, note_g, note_R,
-                 note_g, note_R, note_e, note_R, note_d, note_R, note_c, note_R,
-                 note_d, note_R, note_e, note_R, note_e, note_R, note_e, note_R,
-                 note_e, note_R, note_d, note_R, note_d, note_R, note_e, note_R,
-                 note_d, note_R, note_c, note_R, note_c };
-// int melody[] = {400, 250, 800, 0};
+#define NFREQ 13
+int melody[] = { note_d4, note_R, note_e4, note_R, note_c4, note_R, note_c3,
+                 note_R, note_g3, note_g3, note_g3, note_g3, note_R };
