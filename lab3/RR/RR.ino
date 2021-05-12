@@ -1,22 +1,22 @@
 /* University of Washington
- * ECE/CSE 474,  [4/29]
+ * ECE/CSE 474,  [5/12]
  *
  *   Sunny Hu
  *   Peter Gunarso
  *
- *   Lab 2, Task 3.2
+ *   Lab 3, Round Robin Scheduler
  *
  */
 
-#include "3.2.h"
+#include "RR.h"
 
-uint32_t t1 = ADURATION;
-uint32_t t2 = t1 + (uint32_t) NFREQ * (PLAY_DURATION);
-uint32_t t3 = t2 + CDURATION;
-uint32_t t4 = t3 + 1000;
+// uint32_t t1 = ADURATION;
+// uint32_t t2 = t1 + (uint32_t) NFREQ * (PLAY_DURATION);
+// uint32_t t3 = t2 + CDURATION;
+// uint32_t t4 = t3 + 1000;
 
-int resetA = 0;
-int resetB = 0;
+int reset1 = 0;
+int reset2 = 0;
 
 // sets the OCR4A to make the clock cycle frequency
 // the same as the input freq
@@ -25,107 +25,68 @@ void setOC4AFreq(uint32_t freq) {
   TIMER_COUNTER = 0;
 }
 
-void taskA() {
+void task1() {
   static unsigned long time;
   time++;
 
   // reset everything given a reset signal
-  if (resetA) {
+  if (reset1) {
     LED_PORT |= BIT2;
-    LED_PORT |= BIT1;
-    LED_PORT |= BIT0;
     time = 0;
-    resetA = 0;
+    reset1 = 0;
     return;
   }
 
-  // flash led on pin 47 for FLASH_DURATIOn
+  // flash led on pin 47 for FLASH_DURATION
   if (time == (0 * FLASH_DURATION) + 1) {
     LED_PORT &= ~BIT2;
-    LED_PORT |= BIT1;
-    LED_PORT |= BIT0;
   }
 
-  // flash led on pin 48 for FLASH_DURATION
   if (time == (1 * FLASH_DURATION) + 1) {
     LED_PORT |= BIT2;
-    LED_PORT &= ~BIT1;
-    LED_PORT |= BIT0;
   }
 
-  // flash led on pin 49 for FLASH_DURATION
-  if (time == (2 * FLASH_DURATION) + 1) {
-    LED_PORT |= BIT2;
-    LED_PORT |= BIT1;
-    LED_PORT &= ~BIT0;
-  }
-
-  if (time == (3 * FLASH_DURATION) + 1) {
-    LED_PORT |= BIT2;
-    LED_PORT |= BIT1;
-    LED_PORT |= BIT0;
+  if (time == 1000) {
     time = 0;
   }
 
   return;
 }
 
-void taskB() {
+void task2() {
   static unsigned long time;
   time++;
 
-  if (resetB) {
+  if (reset2) {
     setOC4AFreq(0);
     time = 0;
-    resetB = 0;
+    reset2 = 0;
     return;
   }
 
+  // play tone
   for (int i = 0; i < NFREQ; i++) {
     if (time == ((unsigned long) i * PLAY_DURATION) + 1) {
       setOC4AFreq(melody[i]);
     }
   }
 
+  // stop playing for 4 seconds
   if (time == ((unsigned long) NFREQ * PLAY_DURATION) + 1) {
+    setOC4AFreq(0);
+  }
+
+  // start playing after 4 seconds
+  for (int i = 0; i < NFREQ; i++) {
+    if (time == (PICKUP_TIME + (unsigned long) i * PLAY_DURATION) + 1) {
+      setOC4AFreq(melody[i]);
+    }
+  }
+
+  // reset
+  if (time == (PICKUP_TIME + (unsigned long) NFREQ * PLAY_DURATION) + 1) {
     time = 0;
   }
-}
-
-void taskC() {
-  static unsigned long time;
-  time++;
-
-  if (time <= t1) {
-    taskA();
-    return;
-  }
-
-  if (time <= t2) {
-    taskB();
-    return;
-  }
-
-  if (time <= t3) {
-    taskA();
-    taskB();
-    return;
-  }
-
-  if (time <= t4) {
-    resetA = 1;
-    resetB = 1;
-    taskA();
-    taskB();
-  }
-
-  if (time > t4) {
-    resetB = 1;
-    taskB();
-    time = 0;
-    return;
-  }
-
 }
 
 void setup() {
@@ -156,13 +117,14 @@ void setup() {
   // set pin 6 as an output pin
   SPEAKER_DDR |= BIT3;
 
-  // set output pins for taskA
+  // set output pins for task1
   LED_DDR |= BIT0;
   LED_DDR |= BIT1;
   LED_DDR |= BIT2;
 }
 
 void loop() {
-  taskC();
+  task1();
+  task2();
   delay(1);
 }
