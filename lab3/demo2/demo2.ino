@@ -172,7 +172,7 @@ void interruptSetup() {
   TCCR3A |= (0 << COM3A1) | (1 << COM3A0);
 
   // enable interrupt on counter A
-  TIMSK3 |= OCIE3A;
+  TIMSK3 |= (1 << OCIE3A);
 
   // set frequency of timer
   // TCCR3B |= (0 << CS32) | (0 << CS31) | (1 << CS30);
