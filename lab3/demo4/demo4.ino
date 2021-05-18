@@ -40,8 +40,32 @@ void setup() {
   }
   taskArr[0] = task1;
   taskArr[1] = task2;
+  taskArr[2] = task3;
   taskArr[NTASKS-2] = schedule_sync;
   Serial.begin(9600);
+
+  // set up digit selectors
+  pinMode(13, OUTPUT);
+  pinMode(12, OUTPUT);
+  pinMode(11, OUTPUT);
+  pinMode(10, OUTPUT);
+  
+  // set up 7-seg outputs
+  pinMode(22, OUTPUT);
+  pinMode(23, OUTPUT);
+  pinMode(24, OUTPUT);
+  pinMode(25, OUTPUT);
+  pinMode(26, OUTPUT);
+  pinMode(27, OUTPUT);
+  pinMode(28, OUTPUT);
+
+  digitalWrite(13, 1);
+  digitalWrite(12, 1);
+  digitalWrite(11, 1);
+  digitalWrite(10, 1);
+
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, LOW);
 }
 
 void loop() {
@@ -175,10 +199,10 @@ void task2() {
 
 void convert(int * digits, int val) {
   // array for all the vals?
-	digits[3] = val % 10;
-	digits[2] = (val/10) % 10;
-	digits[1] = (val/100) % 10;
-	digits[0] = (val /1000) % 10;
+	digits[0] = val % 10;
+	digits[1] = (val/10) % 10;
+	digits[2] = (val/100) % 10;
+	digits[3] = (val/1000) % 10;
 }
 
 void task3() {
@@ -189,13 +213,42 @@ void task3() {
   convert(digits, count);
 
   // display count on the 7seg display
-
+  for (int i = 0; i < 4; i++) {
+    int pin = 10 + i;
+    // i think i need to fix this if statement to make it work
+    if (timeArr[currTask] % 5 == 0 && timeArr[currTask] < 5*i) {
+      // turn 7seg & specified digit on
+      digitalWrite(pin, 0);
+      byte *disp = seven_seg_digits[digits[i]];
+      send7(disp);
+      sleep_474(2);
+      return;
+    } else { // turn off digit
+      // should this be a separate if statement?
+      byte disp[7] = {0, 0, 0, 0, 0, 0, 0};
+      send7(disp);
+      digitalWrite(pin, 1);
+      sleep_474(3);
+      return;
+    }
+  }
 
   // reset
   if (timeArr[currTask] >= 100) {
+    digitalWrite(LED_BUILTIN, HIGH); // this doesn't seem to turn on/happen
     timeArr[currTask] = 0;
     count = count == 9999 ? 0 : count + 1;
   }
+}
+
+void send7(byte arr[7]) {
+  digitalWrite(22, arr[0]);
+  digitalWrite(23, arr[1]);
+  digitalWrite(24, arr[2]);
+  digitalWrite(25, arr[3]);
+  digitalWrite(26, arr[4]);
+  digitalWrite(27, arr[5]);
+  digitalWrite(28, arr[6]);
 }
 
 void interruptSetup() {

@@ -43,6 +43,8 @@ byte seven_seg_digits[10][7] = { { 1,1,1,1,1,1,0 },  // = 0
                                  { 1,1,1,0,0,1,1 }   // = 9
                                  };
 
+                  
+
 #define NTASKS 10
 
 // possible states for our tasks to be in
@@ -57,6 +59,7 @@ void task1();
 void task2();
 void task3();
 void convert(int * digits, int val);
+void send7(byte arr[7]);
 void interruptSetup();
 void speakerSetup();
 void ledSetup();
