@@ -2,6 +2,15 @@
 #define BIT1 1<<1
 #define BIT2 1<<2
 #define BIT3 1<<3
+#define BIT4 1<<4
+#define BIT5 1<<5
+#define BIT6 1<<6
+#define BIT7 1<<7
+
+#define S0 0b1110 << 4
+#define S1 0b1101 << 4
+#define S2 0b1011 << 4
+#define S3 0b0111 << 4
 
 #define TIMER_REG_A TCCR4A
 #define TIMER_REG_B TCCR4B
@@ -43,7 +52,7 @@ byte seven_seg_digits[10][7] = { { 1,1,1,1,1,1,0 },  // = 0
                                  { 1,1,1,0,0,1,1 }   // = 9
                                  };
 
-                  
+
 
 #define NTASKS 10
 
@@ -63,3 +72,4 @@ void send7(byte arr[7]);
 void interruptSetup();
 void speakerSetup();
 void ledSetup();
+void displaySetup();

@@ -30,8 +30,7 @@ void setup() {
   interruptSetup();
   speakerSetup();
   ledSetup();
-  pinMode(36, OUTPUT);
-  digitalWrite(36, 1);
+  displaySetup();
   // LED_PORT |= BIT2;
   // populate task array
   for (int i = 0; i < NTASKS; i++) {
@@ -45,25 +44,6 @@ void setup() {
   taskArr[2] = task3;
   taskArr[NTASKS-2] = schedule_sync;
   // Serial.begin(9600);
-
-  // set up digit selectors
-  pinMode(13, OUTPUT);
-  pinMode(12, OUTPUT);
-  pinMode(11, OUTPUT);
-  pinMode(10, OUTPUT);
-  // set up 7-seg outputs
-  pinMode(22, OUTPUT);
-  pinMode(23, OUTPUT);
-  pinMode(24, OUTPUT);
-  pinMode(25, OUTPUT);
-  pinMode(26, OUTPUT);
-  pinMode(27, OUTPUT);
-  pinMode(28, OUTPUT);
-
-  digitalWrite(13, 1);
-  digitalWrite(12, 1);
-  digitalWrite(11, 1);
-  digitalWrite(10, 1);
 
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
@@ -209,6 +189,7 @@ void convert(int * digits, int val) {
 void task3() {
   static int count;
   static int digits[4];
+  static int displayStates[4] = {S0, S1, S2, S3};
 
   // take digits out of count
   convert(digits, count);
@@ -219,14 +200,8 @@ void task3() {
       int pin = 10 + i;
       // i think i need to fix this if statement to make it work
       if ((timeArr[currTask] / 5) >= (4 * h) + i && (timeArr[currTask] / 5) < (4 * h) + (i + 1)) {
-        // turn the previous display off
-        if (i == 0) {
-          digitalWrite(13, 1);
-        } else {
-          digitalWrite(pin-1, 1);
-        }
         // turn 7seg & specified digit on
-        digitalWrite(pin, 0);
+        PORTB = displayStates[i];
         byte *disp = seven_seg_digits[digits[i]];
         send7(disp);
         sleep_474(2);
@@ -243,13 +218,11 @@ void task3() {
 }
 
 void send7(byte arr[7]) {
-  digitalWrite(22, arr[0]);
-  digitalWrite(23, arr[1]);
-  digitalWrite(24, arr[2]);
-  digitalWrite(25, arr[3]);
-  digitalWrite(26, arr[4]);
-  digitalWrite(27, arr[5]);
-  digitalWrite(28, arr[6]);
+  int data = 0;
+  for (int i = 0; i < 7; i++) {
+    data |= (arr[i] << i);
+  }
+  PORTA = data;
 }
 
 void interruptSetup() {
@@ -303,6 +276,16 @@ void speakerSetup() {
   // OC4A is tied to pin 6, which is controlled by PH3
   // set pin 6 as an output pin
   SPEAKER_DDR |= BIT3;
+}
+
+void displaySetup() {
+  // set up digit selectors
+  DDRB |= BIT7 | BIT6 | BIT5 | BIT4;
+
+  // set up 7-seg outputs
+  DDRA |= BIT7 | BIT6 | BIT5 | BIT4 | BIT3 | BIT2 | BIT1 | BIT0;
+
+  PORTB |= BIT7 | BIT6 | BIT5 | BIT4;
 }
 
 void ledSetup() {
