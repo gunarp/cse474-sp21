@@ -18,72 +18,78 @@
 int reset1 = 0;
 int reset2 = 0;
 
-static void (* taskArr[NTASKS]) ();
-static int sFlag = PENDING;
-static int sleepArr[NTASKS];
-static int stateArr[NTASKS];
-static int currTask;
+void (* taskArr[NTASKS]) ();
+volatile int sFlag = PENDING;
+volatile int currTask;
+volatile int sleepArr[NTASKS];
+volatile int stateArr[NTASKS];
+volatile long timeArr[NTASKS];
 
 void setup() {
   // get all our outputs set up
   interruptSetup();
-  // speakerSetup();
+  speakerSetup();
   ledSetup();
-  LED_PORT |= BIT2;
+  // LED_PORT |= BIT2;
   // populate task array
   for (int i = 0; i < NTASKS; i++) {
     taskArr[i] = NULL;
+    timeArr[i] = 0;
+    stateArr[i] = READY;
+    sleepArr[i] = 0;
   }
   taskArr[0] = task1;
   taskArr[1] = task2;
-  taskArr[NTASKS-1] = schedule_sync;
+  taskArr[NTASKS-2] = schedule_sync;
+  Serial.begin(9600);
 }
 
 void loop() {
-  // while (1) {}
-  // for (int i = 0; i < NTASKS; i++) {
-  //   if (taskArr[i] != NULL && taskState[i] == READY) {
-  //     // start up this task
-  //     taskState[i] = RUNNING;
-  //     currTask = i;
-  //     *(taskArr[i])();
+  for (int i = 0; i < NTASKS; i++) {
+    if (taskArr[i] != NULL && stateArr[i] == READY) {
+      // start up this task
+      stateArr[i] = RUNNING;
+      currTask = i;
+      (*taskArr[i])();
 
-  //     // tear down
-  //     if (taskState[i] == RUNNING) taskState[i] = READY;
-  //   }
-  // }
+
+      // tear down
+      if (stateArr[i] == RUNNING) stateArr[i] = READY;
+    }
+  }
 }
 
 ISR(TIMER3_COMPA_vect) {
   sFlag = DONE;
-  // SPEAKER_PORT ^= BIT3;
-  LED_PORT ^= BIT2;
 }
 
-void sleep_474(int t) {
+void sleep_474(long t) {
   // sleep array @ [function index], set value to t
   sleepArr[currTask] = t;
   // state array @ [function index], set state to SLEEPING
   stateArr[currTask] = SLEEPING;
+  return;
 }
 
 void schedule_sync() {
   while (sFlag == PENDING) {
+    3 + 5;
   }
+  for (int i = 0; i < NTASKS; i++) {
+    // update remaining sleep time
+    if (stateArr[i] == SLEEPING) {
+      sleepArr[i] -= 2;
+      // wake up any sleeping tasks
+      if (sleepArr[i] < 2) {
+        // reset to t = 0 in sleep array (not sure if needed)
+        sleepArr[i] = 0;
+        // change corresponding state from SLEEPING to READY
+        stateArr[i] = READY;
+      }
+    }
 
-  // for (int i = 0; i < NTASKS; i++) {
-  //   // update remaining sleep time
-  //   if (stateArr[i] == SLEEPING) {
-  //     sleepArr[i] -= 2;
-  //   }
-  //   // wake up any sleeping tasks
-  //   if (sleepArr[i] < 2) {
-  //     // reset to t = 0 in sleep array (not sure if needed)
-  //     sleepArr[i] = 0;
-  //     // change corresponding state from SLEEPING to READY
-  //     stateArr[i] = READY;
-  //   }
-  // }
+    timeArr[i] += 2;
+  }
 
   // reset sFlag
   sFlag = PENDING;
@@ -98,66 +104,72 @@ void setOC4AFreq(uint32_t freq) {
 }
 
 void task1() {
-  static unsigned long time;
-  time++;
-
   // reset everything given a reset signal
   if (reset1) {
     LED_PORT |= BIT2;
-    time = 0;
+    timeArr[currTask] = 0;
     reset1 = 0;
     return;
   }
 
   // flash led on pin 47 for FLASH_DURATION
-  if (time == (0 * FLASH_DURATION) + 1) {
+  if (timeArr[currTask] < (1 * FLASH_DURATION) + 1) {
     LED_PORT &= ~BIT2;
+    sleep_474(250);
+    return;
   }
 
-  if (time == (1 * FLASH_DURATION) + 1) {
+  if (timeArr[currTask] < (2 * FLASH_DURATION) + 1) {
     LED_PORT |= BIT2;
+    sleep_474(750);
+    return;
   }
 
-  if (time == 1000) {
-    time = 0;
+  if (timeArr[currTask] >= 1000) {
+    timeArr[currTask]= 0;
   }
 
   return;
 }
 
 void task2() {
-  static unsigned long time;
-  time++;
-
   if (reset2) {
     setOC4AFreq(0);
-    time = 0;
+    timeArr[currTask] = 0;
     reset2 = 0;
     return;
   }
 
   // play tone
   for (int i = 0; i < NFREQ; i++) {
-    if (time == ((unsigned long) i * PLAY_DURATION) + 1) {
+    if ( timeArr[currTask] >= ((unsigned long) i * PLAY_DURATION) &&
+      timeArr[currTask] < (((unsigned long) i + 1) * PLAY_DURATION) ) {
       setOC4AFreq(melody[i]);
+      sleep_474(PLAY_DURATION);
+      return;
     }
   }
 
   // stop playing for 4 seconds
-  if (time == ((unsigned long) NFREQ * PLAY_DURATION) + 1) {
+  if (timeArr[currTask] < PICKUP_TIME) {
     setOC4AFreq(0);
+    sleep_474(PAUSE_DURATION);
+    return;
   }
 
   // start playing after 4 seconds
   for (int i = 0; i < NFREQ; i++) {
-    if (time == (PICKUP_TIME + (unsigned long) i * PLAY_DURATION) + 1) {
+    if (timeArr[currTask] >= (PICKUP_TIME + ((unsigned long) i) * PLAY_DURATION) &&
+        timeArr[currTask] < (PICKUP_TIME + ((unsigned long) i + 1) * PLAY_DURATION)) {
       setOC4AFreq(melody[i]);
+      sleep_474(PLAY_DURATION);
+      return;
     }
   }
 
   // reset
-  if (time == (PICKUP_TIME + (unsigned long) NFREQ * PLAY_DURATION) + 1) {
-    time = 0;
+  if (timeArr[currTask] >= (PICKUP_TIME + (unsigned long) NFREQ * PLAY_DURATION)) {
+    timeArr[currTask] = 0;
   }
 }
 
@@ -175,10 +187,10 @@ void interruptSetup() {
   TIMSK3 |= (1 << OCIE3A);
 
   // set frequency of timer
-  // TCCR3B |= (0 << CS32) | (0 << CS31) | (1 << CS30);
-  TCCR3B |= (1 << CS32) | (0 << CS31) | (1 << CS30); // 1024
-  OCR3A =  7812; // should make around 1 hz
-  // OCR3A = 16000;
+  TCCR3B |= (0 << CS32) | (0 << CS31) | (1 << CS30);
+  // TCCR3B |= (1 << CS32) | (0 << CS31) | (1 << CS30); // 1024
+  // OCR3A =  7812; // should make around 1 hz
+  OCR3A = 32000;
   TCNT3H = 0;
 
   // enable interrupts

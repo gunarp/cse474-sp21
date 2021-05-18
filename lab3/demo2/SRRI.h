@@ -38,7 +38,7 @@ enum state {READY, RUNNING, SLEEPING};
 
 enum flagState {PENDING, DONE};
 
-void sleep_474(int t);
+void sleep_474(long t);
 void schedule_sync();
 void setOC4AFreq(uint32_t freq);
 void task1();
