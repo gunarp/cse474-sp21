@@ -30,6 +30,8 @@ void setup() {
   interruptSetup();
   speakerSetup();
   ledSetup();
+  pinMode(36, OUTPUT);
+  digitalWrite(36, 1);
   // LED_PORT |= BIT2;
   // populate task array
   for (int i = 0; i < NTASKS; i++) {
@@ -42,14 +44,13 @@ void setup() {
   taskArr[1] = task2;
   taskArr[2] = task3;
   taskArr[NTASKS-2] = schedule_sync;
-  Serial.begin(9600);
+  // Serial.begin(9600);
 
   // set up digit selectors
   pinMode(13, OUTPUT);
   pinMode(12, OUTPUT);
   pinMode(11, OUTPUT);
   pinMode(10, OUTPUT);
-  
   // set up 7-seg outputs
   pinMode(22, OUTPUT);
   pinMode(23, OUTPUT);
@@ -213,29 +214,29 @@ void task3() {
   convert(digits, count);
 
   // display count on the 7seg display
-  for (int i = 0; i < 4; i++) {
-    int pin = 10 + i;
-    // i think i need to fix this if statement to make it work
-    if (timeArr[currTask] % 5 == 0 && timeArr[currTask] < 5*i) {
-      // turn 7seg & specified digit on
-      digitalWrite(pin, 0);
-      byte *disp = seven_seg_digits[digits[i]];
-      send7(disp);
-      sleep_474(2);
-      return;
-    } else { // turn off digit
-      // should this be a separate if statement?
-      byte disp[7] = {0, 0, 0, 0, 0, 0, 0};
-      send7(disp);
-      digitalWrite(pin, 1);
-      sleep_474(3);
-      return;
+  for (int h = 0; h < 5; h++) {
+    for (int i = 0; i < 4; i++) {
+      int pin = 10 + i;
+      // i think i need to fix this if statement to make it work
+      if ((timeArr[currTask] / 5) >= (4 * h) + i && (timeArr[currTask] / 5) < (4 * h) + (i + 1)) {
+        // turn the previous display off
+        if (i == 0) {
+          digitalWrite(13, 1);
+        } else {
+          digitalWrite(pin-1, 1);
+        }
+        // turn 7seg & specified digit on
+        digitalWrite(pin, 0);
+        byte *disp = seven_seg_digits[digits[i]];
+        send7(disp);
+        sleep_474(2);
+        return;
+      }
     }
   }
 
   // reset
   if (timeArr[currTask] >= 100) {
-    digitalWrite(LED_BUILTIN, HIGH); // this doesn't seem to turn on/happen
     timeArr[currTask] = 0;
     count = count == 9999 ? 0 : count + 1;
   }
