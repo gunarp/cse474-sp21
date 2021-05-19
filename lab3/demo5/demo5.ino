@@ -19,21 +19,23 @@ volatile int id;
 volatile int currTask;
 volatile FLAG sFlag;
 
+volatile int currFreq;
+
 void setup() {
   id = 0;
   // get all our outputs set up
   interruptSetup();
   speakerSetup();
-  ledSetup();
+  displaySetup();
+  LED_DDR |= BIT2;
+  LED_PORT |= BIT2;
 
   // intialize our task tracking arrays
   DDSSetup();
 
-  task_load(task1, "task 1");
-  task_load(task2, "task 2");
+  task_load(task4, "task4");
   task_load(schedule_sync, "schedule_sync");
-  task_start(find_dead_task("task 1"));
-  task_start(find_dead_task("task 2"));
+  task_start(find_dead_task("task4"));
   task_start(find_dead_task("schedule_sync"));
 }
 
@@ -43,8 +45,8 @@ void loop() {
       // start up this task
       taskArr[i].state = RUNNING;
       currTask = i;
-      taskArr[i].nTimes++;
       (*(taskArr[i].fn_ptr))();
+      taskArr[i].nTimes++;
 
       // tear down
       if (taskArr[i].state == RUNNING) taskArr[i].state = READY;
@@ -88,6 +90,7 @@ void task_self_quit() {
   copy_tcb(&(deadTasks[i]), &(taskArr[currTask]));
   deadTasks[i].state = DEAD;
   taskArr[currTask].state = DEAD;
+  taskArr[currTask].fn_ptr = NULL;
 }
 
 void task_start(tcb * task) {
@@ -102,6 +105,7 @@ void task_start(tcb * task) {
   copy_tcb(&(taskArr[i]), task);
   taskArr[i].state = READY;
   task->state = DEAD;
+  task->fn_ptr = NULL;
 }
 
 void task_load(void (*fn_ptr)(), const char * name) {
@@ -158,42 +162,6 @@ void schedule_sync() {
   return;
 }
 
-// sets the OCR4A to make the clock cycle frequency
-// the same as the input freq
-void setOC4AFreq(uint32_t freq) {
-  PRESCALER = freq == 0 ? 0 : 16000000 / (2 * freq);
-  TIMER_COUNTER = 0;
-}
-
-void task1() {
-  // reset everything given a reset signal
-  if (reset1) {
-    LED_PORT |= BIT2;
-    taskArr[currTask].time = 0;
-    reset1 = 0;
-    return;
-  }
-
-  // flash led on pin 47 for FLASH_DURATION
-  if (taskArr[currTask].time < (1 * FLASH_DURATION) + 1) {
-    LED_PORT &= ~BIT2;
-    sleep_474(250);
-    return;
-  }
-
-  if (taskArr[currTask].time < (2 * FLASH_DURATION) + 1) {
-    LED_PORT |= BIT2;
-    sleep_474(750);
-    return;
-  }
-
-  if (taskArr[currTask].time >= 1000) {
-    taskArr[currTask].time = 0;
-  }
-
-  return;
-}
-
 void task2() {
   if (reset2) {
     setOC4AFreq(0);
@@ -207,6 +175,7 @@ void task2() {
     if ( taskArr[currTask].time >= ((unsigned long) i * PLAY_DURATION) &&
       taskArr[currTask].time < (((unsigned long) i + 1) * PLAY_DURATION) ) {
       setOC4AFreq(melody[i]);
+      currFreq = melody[i];
       sleep_474(PLAY_DURATION);
       return;
     }
@@ -215,6 +184,7 @@ void task2() {
   // stop playing for 4 seconds
   if (taskArr[currTask].time < PICKUP_TIME) {
     setOC4AFreq(0);
+    currFreq = 0;
     sleep_474(PAUSE_DURATION);
     return;
   }
@@ -224,6 +194,7 @@ void task2() {
     if (taskArr[currTask].time >= (PICKUP_TIME + ((unsigned long) i) * PLAY_DURATION) &&
         taskArr[currTask].time < (PICKUP_TIME + ((unsigned long) i + 1) * PLAY_DURATION)) {
       setOC4AFreq(melody[i]);
+      currFreq = melody[i];
       sleep_474(PLAY_DURATION);
       return;
     }
@@ -231,7 +202,117 @@ void task2() {
 
   // reset
   if (taskArr[currTask].time >= (PICKUP_TIME + (unsigned long) NFREQ * PLAY_DURATION)) {
+    currFreq = 0;
     taskArr[currTask].time = 0;
+  }
+}
+
+void task4() {
+  // launch task 2 to run on the first call to task4
+  if (taskArr[currTask].nTimes == 0) {
+    task_load(task2, "task2");
+    task_start(find_dead_task("task2"));
+    task_load(task4_1, "display_freqs");
+    task_load(task4_2, "countdown");
+  }
+
+  if (taskArr[currTask].time < PLAY_DURATION) {
+    task_start(find_dead_task("display_freqs"));
+    sleep_474(PLAY_DURATION);
+    return;
+  }
+
+  // if (taskArr[currTask].time >= PLAY_DURATION &&
+  //     taskArr[currTask].time < PLAY_DURATION + PAUSE_DURATION) {
+  //   task_start(find_dead_task("countdown"));
+  //   sleep_474(PAUSE_DURATION);
+  //   return;
+  // }
+
+  if (taskArr[currTask].time >= PLAY_DURATION + PAUSE_DURATION &&
+      taskArr[currTask].time < 2 * PLAY_DURATION + PAUSE_DURATION) {
+    task_start(find_dead_task("display_freqs"));
+    sleep_474(PLAY_DURATION);
+    return;
+  }
+
+  if (taskArr[currTask].time >= 2 * PLAY_DURATION + PAUSE_DURATION) {
+    taskArr[currTask].time = 0;
+  }
+}
+
+void task4_1() {
+  static int time;
+  static int digits[4];
+  static int displayStates[4] = {S0, S1, S2, S3};
+
+  LED_PORT &= ~BIT2;
+  // take digits out of currFreq
+  convert(digits, currFreq);
+
+  // display count on the 7seg display
+  for (int h = 0; h < 5; h++) {
+    for (int i = 0; i < 4; i++) {
+      int pin = 10 + i;
+      if ((taskArr[currTask].time / 5) >= (4 * h) + i && (taskArr[currTask].time / 5) < (4 * h) + (i + 1)) {
+        // turn 7seg & specified digit on
+        PORTB = displayStates[i];
+        byte *disp = seven_seg_digits[digits[i]];
+        send7(disp);
+        sleep_474(2);
+        return;
+      }
+    }
+  }
+
+  // reset
+  if (taskArr[currTask].time >= 100) {
+    time += taskArr[currTask].time = 0;
+    taskArr[currTask].time = 0;
+  }
+  if (time >= PLAY_DURATION) {
+    time = 0;
+    PORTB = 0xFF;
+    task_self_quit();
+  }
+}
+
+void task4_2() {
+  static int time;
+  static int count;
+  static int digits[4];
+  static int displayStates[4] = {S0, S1, S2, S3};
+
+  // take digits out of count
+  convert(digits, (PAUSE_DURATION / 10) - count);
+
+  // display count on the 7seg display
+  for (int h = 0; h < 5; h++) {
+    for (int i = 0; i < 4; i++) {
+      int pin = 10 + i;
+      if ((taskArr[currTask].time / 5) >= (4 * h) + i && (taskArr[currTask].time / 5) < (4 * h) + (i + 1)) {
+        // turn 7seg & specified digit on
+        PORTB = displayStates[i];
+        byte *disp = seven_seg_digits[digits[i]];
+        send7(disp);
+        sleep_474(2);
+        return;
+      }
+    }
+  }
+
+  // reset
+  if (taskArr[currTask].time >= 100) {
+    time += taskArr[currTask].time;
+    taskArr[currTask].time = 0;
+    count = count == 9999 ? 0 : count + 1;
+  }
+
+  if (time >= PAUSE_DURATION) {
+    PORTB = 0xFF;
+    taskArr[currTask].time = 0;
+    count = 0;
+    task_self_quit();
   }
 }
 
@@ -259,10 +340,18 @@ void interruptSetup() {
   SREG |= (1<<7);
 }
 
+// sets the OCR4A to make the clock cycle frequency
+// the same as the input freq
+void setOC4AFreq(uint32_t freq) {
+  PRESCALER = freq == 0 ? 0 : 16000000 / (2 * freq);
+  TIMER_COUNTER = 0;
+}
+
 void speakerSetup() {
   // clear timer settings
   TIMER_REG_A = 0;
   TIMER_REG_B = 0;
+
   // set our timer to work in CTC mode
   TIMER_REG_A |= (0 << WGM41) | (0 << WGM40);
   TIMER_REG_B |= (0 << WGM43) | (1 << WGM42);
@@ -288,9 +377,29 @@ void speakerSetup() {
   SPEAKER_DDR |= BIT3;
 }
 
-void ledSetup() {
-  // set output pins for task1
-  LED_DDR |= BIT2;
+void displaySetup() {
+  // set up digit selectors
+  DDRB |= BIT7 | BIT6 | BIT5 | BIT4;
+
+  // set up 7-seg outputs
+  DDRA |= BIT7 | BIT6 | BIT5 | BIT4 | BIT3 | BIT2 | BIT1 | BIT0;
+
+  PORTB |= BIT7 | BIT6 | BIT5 | BIT4;
+}
+
+void send7(byte arr[7]) {
+  int data = 0;
+  for (int i = 0; i < 7; i++) {
+    data |= (arr[i] << i);
+  }
+  PORTA = data;
+}
+
+void convert(int * digits, int val) {
+	digits[0] = val % 10;
+	digits[1] = (val/10) % 10;
+	digits[2] = (val/100) % 10;
+	digits[3] = (val/1000) % 10;
 }
 
 void DDSSetup() {

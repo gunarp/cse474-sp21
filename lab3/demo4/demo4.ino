@@ -179,7 +179,6 @@ void task2() {
 }
 
 void convert(int * digits, int val) {
-  // array for all the vals?
 	digits[0] = val % 10;
 	digits[1] = (val/10) % 10;
 	digits[2] = (val/100) % 10;
@@ -198,7 +197,6 @@ void task3() {
   for (int h = 0; h < 5; h++) {
     for (int i = 0; i < 4; i++) {
       int pin = 10 + i;
-      // i think i need to fix this if statement to make it work
       if ((timeArr[currTask] / 5) >= (4 * h) + i && (timeArr[currTask] / 5) < (4 * h) + (i + 1)) {
         // turn 7seg & specified digit on
         PORTB = displayStates[i];
