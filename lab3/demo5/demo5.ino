@@ -216,9 +216,9 @@ void task4() {
     task_load(task4_2, "countdown");
   }
 
-  if (taskArr[currTask].time < PLAY_DURATION) {
+  if (taskArr[currTask].time < NFREQ * PLAY_DURATION) {
     task_start(find_dead_task("display_freqs"));
-    sleep_474(PLAY_DURATION);
+    sleep_474(NFREQ * PLAY_DURATION);
     return;
   }
 
@@ -229,14 +229,14 @@ void task4() {
   //   return;
   // }
 
-  if (taskArr[currTask].time >= PLAY_DURATION + PAUSE_DURATION &&
-      taskArr[currTask].time < 2 * PLAY_DURATION + PAUSE_DURATION) {
+  if (taskArr[currTask].time >= NFREQ * PLAY_DURATION + PAUSE_DURATION &&
+      taskArr[currTask].time < 2 * NFREQ * PLAY_DURATION + PAUSE_DURATION) {
     task_start(find_dead_task("display_freqs"));
-    sleep_474(PLAY_DURATION);
+    sleep_474(NFREQ * PLAY_DURATION);
     return;
   }
 
-  if (taskArr[currTask].time >= 2 * PLAY_DURATION + PAUSE_DURATION) {
+  if (taskArr[currTask].time >= 2 * NFREQ * PLAY_DURATION + PAUSE_DURATION) {
     taskArr[currTask].time = 0;
   }
 }
@@ -246,7 +246,6 @@ void task4_1() {
   static int digits[4];
   static int displayStates[4] = {S0, S1, S2, S3};
 
-  LED_PORT &= ~BIT2;
   // take digits out of currFreq
   convert(digits, currFreq);
 
@@ -267,10 +266,11 @@ void task4_1() {
 
   // reset
   if (taskArr[currTask].time >= 100) {
-    time += taskArr[currTask].time = 0;
+    time += taskArr[currTask].time;
     taskArr[currTask].time = 0;
   }
-  if (time >= PLAY_DURATION) {
+  if (time >= NFREQ * PLAY_DURATION) {
+    LED_PORT &= ~BIT2;
     time = 0;
     PORTB = 0xFF;
     task_self_quit();
