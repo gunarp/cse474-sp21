@@ -20,24 +20,21 @@ volatile int currTask;
 volatile FLAG sFlag;
 
 void setup() {
+  id = 0;
   // get all our outputs set up
   interruptSetup();
   speakerSetup();
   ledSetup();
-  id = 0;
-  // LED_PORT |= BIT2;
-  // populate task array
-  for (int i = 0; i < NTASKS; i++) {
-    taskArr[i].fn_ptr = NULL;
-    taskArr[i].id = 0;
-    taskArr[i].nTimes = 0;
-    taskArr[i].timeSleep = 0;
-    taskArr[i].time = 0;
-    taskArr[i].state = DEAD;
-  }
+
+  // intialize our task tracking arrays
+  DDSSetup;
+
   task_load(task1, "task 1");
   task_load(task2, "task 2");
   task_load(schedule_sync, "schedule_sync");
+  task_start(find_dead_task("task 1"));
+  task_start(find_dead_task("task 2"));
+  task_start(find_dead_task("schedule_sync"));
 }
 
 void loop() {
@@ -46,6 +43,7 @@ void loop() {
       // start up this task
       taskArr[i].state = RUNNING;
       currTask = i;
+      taskArr[i].nTimes++;
       (*(taskArr[i].fn_ptr))();
 
       // tear down
@@ -58,43 +56,73 @@ ISR(TIMER3_COMPA_vect) {
   sFlag = DONE;
 }
 
+tcb * find_dead_task(const char * name) {
+  int i;
+  for (i = 0; i < NTASKS; i++) {
+    if (strcmp(name, deadTasks[i].name) == 0) break;
+  }
+
+  if (i == NTASKS) return NULL;
+
+  return &(deadTasks[i]);
+}
+
+void copy_tcb(tcb * dst, tcb * src) {
+  dst->fn_ptr = src->fn_ptr;
+  strcpy(dst->name, src->name);
+  dst->id = src->id;
+  dst->nTimes = src->nTimes;
+  dst->state = src->state;
+  dst->time = src->time;
+  dst->timeSleep = src->timeSleep;
+}
+
 void task_self_quit() {
   // find a spot in the dead array
   int i;
   for (i = 0; i < NTASKS; i++) {
-    if (deadTasks[i].fn_ptr != NULL) break;
+    if (deadTasks[i].fn_ptr == NULL) break;
   }
 
   if (i == NTASKS) return;
-  deadTasks[i].fn_ptr = taskArr[currTask].fn_ptr;
-  strcpy(deadTasks[i].name, taskArr[i].name);
+  copy_tcb(&(deadTasks[i]), &(taskArr[currTask]));
   deadTasks[i].state = DEAD;
+  taskArr[currTask].state = DEAD;
 }
 
 void task_start(tcb * task) {
-  if (task->state != DEAD) return;
-  task_load(task->fn_ptr, task->name);
-}
-
-void task_load(void (*fn_ptr)(), const char * name) {
-  // find the next open slot in the task array
+  if (task == NULL || task->state != DEAD) return;
+  // find a spot in the dead array
   int i;
   for (i = 0; i < NTASKS; i++) {
     if (taskArr[i].fn_ptr == NULL) break;
+  }
+
+  if (i == NTASKS) return;
+  copy_tcb(&(taskArr[i]), task);
+  taskArr[i].state = READY;
+  task->state = DEAD;
+}
+
+void task_load(void (*fn_ptr)(), const char * name) {
+  // find the next open slot in the dead task array
+  int i;
+  for (i = 0; i < NTASKS; i++) {
+    if (deadTasks[i].fn_ptr == NULL) break;
   }
 
   // if there's no space, don't do anything
   if (i == NTASKS) return;
 
   // load up a new task
-  strcpy(taskArr[i].name, name);
-  taskArr[i].fn_ptr = fn_ptr;
-  taskArr[i].id = id;
+  strcpy(deadTasks[i].name, name);
+  deadTasks[i].fn_ptr = fn_ptr;
+  deadTasks[i].id = id;
   id++;
-  taskArr[i].nTimes = 0;
-  taskArr[i].timeSleep = 0;
-  taskArr[i].time = 0;
-  taskArr[i].state = READY;
+  deadTasks[i].nTimes = 0;
+  deadTasks[i].timeSleep = 0;
+  deadTasks[i].time = 0;
+  deadTasks[i].state = DEAD;
 }
 
 void sleep_474(long t) {
@@ -263,4 +291,22 @@ void speakerSetup() {
 void ledSetup() {
   // set output pins for task1
   LED_DDR |= BIT2;
+}
+
+void DDSSetup() {
+  // populate task array
+  for (int i = 0; i < NTASKS; i++) {
+    taskArr[i].fn_ptr = NULL;
+    taskArr[i].id = 0;
+    taskArr[i].nTimes = 0;
+    taskArr[i].timeSleep = 0;
+    taskArr[i].time = 0;
+    taskArr[i].state = DEAD;
+    deadTasks[i].fn_ptr = NULL;
+    deadTasks[i].id = 0;
+    deadTasks[i].nTimes = 0;
+    deadTasks[i].timeSleep = 0;
+    deadTasks[i].time = 0;
+    deadTasks[i].state = DEAD;
+  }
 }
