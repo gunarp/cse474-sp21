@@ -233,6 +233,7 @@ void task2() {
   if (taskArr[currTask].time >= (PICKUP_TIME + (unsigned long) NFREQ * PLAY_DURATION)) {
     currFreq = 0;
     taskArr[currTask].time = 0;
+    task_self_quit();
   }
 }
 
@@ -267,6 +268,7 @@ void task4() {
 
   if (taskArr[currTask].time >= 2 * NFREQ * PLAY_DURATION + PAUSE_DURATION) {
     taskArr[currTask].time = 0;
+    task_self_quit();
   }
 }
 
@@ -384,7 +386,8 @@ void task5() {
   }
 
   if (taskArr[currTask].time >= 2 * TASK2_DURATION + PAUSE_DURATION_T5 + SMILE_DURATION) {
-    taskArr[currTask].time = 0;
+    sleep_474(SMILE_DURATION);
+    return;
   }
 }
 
