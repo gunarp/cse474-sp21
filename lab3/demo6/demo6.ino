@@ -28,7 +28,7 @@ void setup() {
   speakerSetup();
   displaySetup();
   LED_DDR |= BIT2;
-  LED_PORT |= BIT2;
+  // LED_PORT |= BIT2;
 
   // intialize our task tracking arrays
   DDSSetup();
@@ -347,18 +347,16 @@ void task4_2() {
 
 void task5() {
   if (taskArr[currTask].nTimes == 0) {
-    task_load(task2, "task1");
+    task_load(task1, "task1");
     task_start(find_dead_task("task1"));
     task_load(task2, "task2");
-    task_start(find_dead_task("task2"));
     task_load(task4_2, "countdown");
     task_load(task5_1, "smile");
     // task_start(find_dead_task("smile"));
   }
 
   if (taskArr[currTask].time < TASK2_DURATION) {
-    // change
-    // task_start(find_dead_task("display_freqs"));
+    task_start(find_dead_task("task2"));
     sleep_474(TASK2_DURATION);
     return;
   }
@@ -372,7 +370,6 @@ void task5() {
 
   if (taskArr[currTask].time >= TASK2_DURATION + PAUSE_DURATION_T5 &&
       taskArr[currTask].time < 2 * TASK2_DURATION + PAUSE_DURATION_T5) {
-    // change
     task_start(find_dead_task("task2"));
     sleep_474(TASK2_DURATION);
     return;
