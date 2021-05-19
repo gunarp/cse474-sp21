@@ -222,12 +222,12 @@ void task4() {
     return;
   }
 
-  // if (taskArr[currTask].time >= PLAY_DURATION &&
-  //     taskArr[currTask].time < PLAY_DURATION + PAUSE_DURATION) {
-  //   task_start(find_dead_task("countdown"));
-  //   sleep_474(PAUSE_DURATION);
-  //   return;
-  // }
+  if (taskArr[currTask].time >= NFREQ * PLAY_DURATION &&
+      taskArr[currTask].time < PLAY_DURATION + PAUSE_DURATION) {
+    task_start(find_dead_task("countdown"));
+    sleep_474(PAUSE_DURATION);
+    return;
+  }
 
   if (taskArr[currTask].time >= NFREQ * PLAY_DURATION + PAUSE_DURATION &&
       taskArr[currTask].time < 2 * NFREQ * PLAY_DURATION + PAUSE_DURATION) {
@@ -270,7 +270,6 @@ void task4_1() {
     taskArr[currTask].time = 0;
   }
   if (time >= NFREQ * PLAY_DURATION) {
-    LED_PORT &= ~BIT2;
     time = 0;
     PORTB = 0xFF;
     task_self_quit();
@@ -284,7 +283,7 @@ void task4_2() {
   static int displayStates[4] = {S0, S1, S2, S3};
 
   // take digits out of count
-  convert(digits, (PAUSE_DURATION / 10) - count);
+  convert(digits, (PAUSE_DURATION / 100) - count);
 
   // display count on the 7seg display
   for (int h = 0; h < 5; h++) {
@@ -310,6 +309,7 @@ void task4_2() {
 
   if (time >= PAUSE_DURATION) {
     PORTB = 0xFF;
+    time = 0;
     taskArr[currTask].time = 0;
     count = 0;
     task_self_quit();
