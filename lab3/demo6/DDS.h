@@ -83,6 +83,8 @@ void task_start(tcb * task);
 void task_load(void (*fn_ptr)(), const char *, tcb * targetArr);
 tcb * find_dead_task(char * name);
 void setOC4AFreq(uint32_t freq);
+void send7(byte arr[7]);
+void convert(int * digits, int val);
 void task1();
 void task2();
 void task4();

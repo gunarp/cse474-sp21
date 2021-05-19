@@ -27,7 +27,7 @@ void setup() {
   interruptSetup();
   speakerSetup();
   displaySetup();
-  LED_DDR |= BIT2;
+  ledSetup();
 
   // intialize our task tracking arrays
   DDSSetup();
@@ -497,10 +497,15 @@ void send7(byte arr[7]) {
 }
 
 void convert(int * digits, int val) {
-	digits[0] = val % 10;
-	digits[1] = (val/10) % 10;
-	digits[2] = (val/100) % 10;
-	digits[3] = (val/1000) % 10;
+  digits[0] = val % 10;
+  digits[1] = (val/10) % 10;
+  digits[2] = (val/100) % 10;
+  digits[3] = (val/1000) % 10;
+}
+
+void ledSetup() {
+  // set output pins for task1
+  LED_DDR |= BIT2;
 }
 
 void DDSSetup() {
