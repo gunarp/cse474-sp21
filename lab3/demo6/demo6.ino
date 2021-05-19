@@ -28,7 +28,6 @@ void setup() {
   speakerSetup();
   displaySetup();
   LED_DDR |= BIT2;
-  // LED_PORT |= BIT2;
 
   // intialize our task tracking arrays
   DDSSetup();
@@ -319,7 +318,6 @@ void task4_2() {
   // display count on the 7seg display
   for (int h = 0; h < 5; h++) {
     for (int i = 0; i < 4; i++) {
-      int pin = 10 + i;
       if ((taskArr[currTask].time / 5) >= (4 * h) + i && (taskArr[currTask].time / 5) < (4 * h) + (i + 1)) {
         // turn 7seg & specified digit on
         PORTB = displayStates[i];
@@ -338,7 +336,7 @@ void task4_2() {
     count = count == 9999 ? 0 : count + 1;
   }
 
-  if (time >= PAUSE_DURATION) {
+  if (time >= PAUSE_DURATION_T5) {
     PORTB = 0xFF;
     time = 0;
     taskArr[currTask].time = 0;
@@ -354,7 +352,6 @@ void task5() {
     task_load(task2, "task2");
     task_load(task4_2, "countdown");
     task_load(task5_1, "smile");
-    // task_start(find_dead_task("smile"));
   }
 
   if (taskArr[currTask].time < TASK2_DURATION) {
@@ -364,29 +361,28 @@ void task5() {
   }
 
   if (taskArr[currTask].time >= TASK2_DURATION &&
-      taskArr[currTask].time < TASK2_DURATION + PAUSE_DURATION_T5) {
+      taskArr[currTask].time < (TASK2_DURATION + PAUSE_DURATION_T5)) {
     task_start(find_dead_task("countdown"));
     sleep_474(PAUSE_DURATION_T5);
     return;
   }
 
-  if (taskArr[currTask].time >= TASK2_DURATION + PAUSE_DURATION_T5 &&
-      taskArr[currTask].time < 2 * TASK2_DURATION + PAUSE_DURATION_T5) {
+  if (taskArr[currTask].time >= (TASK2_DURATION + PAUSE_DURATION_T5) &&
+      taskArr[currTask].time < ((2 * (TASK2_DURATION)) + PAUSE_DURATION_T5)) {
     task_start(find_dead_task("task2"));
     sleep_474(TASK2_DURATION);
     return;
   }
 
-  if (taskArr[currTask].time >= 2 * TASK2_DURATION + PAUSE_DURATION_T5 &&
-      taskArr[currTask].time < 2 * TASK2_DURATION + PAUSE_DURATION_T5 + SMILE_DURATION) {
-    // change
+  if (taskArr[currTask].time >= ((2 * (TASK2_DURATION) + PAUSE_DURATION_T5)) &&
+      taskArr[currTask].time < ((2 * (TASK2_DURATION) + PAUSE_DURATION_T5 + SMILE_DURATION))) {
     task_start(find_dead_task("smile"));
     sleep_474(SMILE_DURATION);
     return;
   }
 
-  if (taskArr[currTask].time >= 2 * TASK2_DURATION + PAUSE_DURATION_T5 + SMILE_DURATION) {
-    sleep_474(SMILE_DURATION);
+  if (taskArr[currTask].time >= ((2 * (TASK2_DURATION) + PAUSE_DURATION_T5 + SMILE_DURATION))) {
+    task_self_quit();
     return;
   }
 }
