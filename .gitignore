@@ -90,3 +90,8 @@ dkms.conf
 *.code-workspace
 
 # End of https://www.toptal.com/developers/gitignore/api/c++,vscode,c
+
+html/
+html/*
+latex/*
+latex/

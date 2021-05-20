@@ -80,7 +80,7 @@ void sleep_474(long t);
 void schedule_sync();
 void task_self_quit();
 void task_start(tcb * task);
-void task_load(void (*fn_ptr)(), const char *, tcb * targetArr);
+void task_load(void (*fn_ptr)(), const char *);
 tcb * find_dead_task(char * name);
 void setOC4AFreq(uint32_t freq);
 void send7(byte arr[7]);

@@ -27,8 +27,6 @@ void setup() {
   interruptSetup();
   speakerSetup();
   displaySetup();
-  LED_DDR |= BIT2;
-  LED_PORT |= BIT2;
 
   // intialize our task tracking arrays
   DDSSetup();
