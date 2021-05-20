@@ -1,11 +1,12 @@
-/* University of Washington
- * ECE/CSE 474,  [5/12]
- *
- *   Sunny Hu
- *   Peter Gunarso
- *
- *   Lab 3, Round Robin Scheduler
- *
+/**
+ * @file demo1.ino
+ * @authors Peter Gunarso, Sunny Hu
+ * @brief Arduino code for demo 1 (Task 1 & 2) using RR scheduler
+ * @version 0.1
+ * @date 2021-05-19
+ * 
+ * @copyright Copyright (c) 2021
+ * 
  */
 
 #include "RR.h"
@@ -89,6 +90,7 @@ void task2() {
   }
 }
 
+/// Initializes everything needed for the tasks
 void setup() {
   // clear timer settings
   TIMER_REG_A = 0;
@@ -123,6 +125,7 @@ void setup() {
   LED_DDR |= BIT2;
 }
 
+/// Scheduler loop
 void loop() {
   task1();
   task2();

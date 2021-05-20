@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2021
  * 
  */
+
 #define BIT0 1<<0
 #define BIT1 1<<1
 #define BIT2 1<<2
@@ -74,39 +75,77 @@ enum flagState {PENDING, DONE};
 
 /**
  * @brief Puts currently running function to sleep for t ms
- * 
+ * @authors Sunny Hu, Peter Gunarso
  * @param t Number of ms for task to sleep for
  */
 void sleep_474(long t);
+
 /**
  * @brief Manages sleep time and clocks each task sees. If a task cannot sleep for any longer, wakes up the task.
- * 
+ * @authors Sunny Hu, Peter Gunarso
  */
 void schedule_sync();
+
 /**
  * @brief Sets the frequency of OC4A to match a given frequency freq
- * 
+ * @authors Sunny Hu, Peter Gunarso
  * @param freq Desired frequency to set OC4A
  */
 void setOC4AFreq(uint32_t freq);
+
 /**
  * @brief Manages task 1 behavior, falshes an LED on and off
- * 
+ * @authors Sunny Hu, Peter Gunarso
  */
 void task1();
+
 /**
  * @brief Manages task 2 behavior, plays the theme from "Close Encounters of the Third Kind" once, pauses for 4 seconds, and plays again.
- * 
+ * @authors Sunny Hu, Peter Gunarso
  */
 void task2();
+
 /**
  * @brief Manages task 3 behavior, counts up by tenths of a second on 7-segment display
- * 
+ * @author Peter Gunarso
  */
 void task3();
+
+/**
+ * @brief Converts an up to 4 digit number into an array of 4 ints, each representing a position in the value.
+ * @author Sunny Hu
+ * @param digits Output parameter, where the digits of val are stored
+ * @param val Value to break up
+ */
 void convert(int * digits, int val);
+
+/**
+ * @brief Sends 7 bits to 7-segment display to light corresponding segments.
+ * @author Sunny Hu
+ * @param arr Bit array to set a 7-segment display
+ */
 void send7(byte arr[7]);
+
+/**
+ * @brief Sets up interrupts to run on timer 3 A, at a frequency of 500hz
+ * @authors Sunny Hu, Peter Gunarso
+ */
 void interruptSetup();
+
+/**
+ * @brief Sets up timer and ports needed to drive a speaker using OC4A
+ * @author Sunny Hu 
+ */
 void speakerSetup();
+
+/**
+ * @brief Sets up the LED used for this lab
+ * @authors Sunny Hu, Peter Gunarso
+ */
 void ledSetup();
+
+/**
+ * @brief Sets up DDR for our 7-segment display
+ * @author Sunny Hu
+ */
 void displaySetup();

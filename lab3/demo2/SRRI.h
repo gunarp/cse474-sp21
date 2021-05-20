@@ -1,3 +1,14 @@
+/**
+ * @file SRRI.h
+ * @authors Peter Gunarso, Sunny Hu
+ * @brief Header file for demo2.ino
+ * @version 0.1
+ * @date 2021-05-19
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
+
 #define BIT0 1<<0
 #define BIT1 1<<1
 #define BIT2 1<<2
@@ -38,11 +49,52 @@ enum state {READY, RUNNING, SLEEPING};
 
 enum flagState {PENDING, DONE};
 
+/**
+ * @brief Puts currently running function to sleep for t ms
+ * @authors Sunny Hu, Peter Gunarso
+ * @param t Number of ms for task to sleep for
+ */
 void sleep_474(long t);
+
+/**
+ * @brief Manages sleep time and clocks each task sees. If a task cannot sleep for any longer, wakes up the task.
+ * @authors Sunny Hu, Peter Gunarso
+ */
 void schedule_sync();
+
+/**
+ * @brief Sets the frequency of OC4A to match a given frequency freq
+ * @authors Sunny Hu, Peter Gunarso
+ * @param freq Desired frequency to set OC4A
+ */
 void setOC4AFreq(uint32_t freq);
+
+/**
+ * @brief Manages task 1 behavior, falshes an LED on and off
+ * @authors Sunny Hu, Peter Guanrso
+ */
 void task1();
+
+/**
+ * @brief Manages task 2 behavior, plays the theme from "Close Encounters of the Third Kind" once, pauses for 4 seconds, and plays again.
+ * @authors Sunny Hu, Peter Gunarso
+ */
 void task2();
+
+/**
+ * @brief Sets up interrupts to run on timer 3 A, at a frequency of 500hz
+ * @authors Sunny Hu, Peter Gunarso
+ */
 void interruptSetup();
+
+/**
+ * @brief Sets up timer and ports needed to drive a speaker using OC4A
+ * @author Sunny Hu 
+ */
 void speakerSetup();
+
+/**
+ * @brief Sets up the LED used for this lab
+ * @authors Sunny Hu, Peter Gunarso
+ */
 void ledSetup();

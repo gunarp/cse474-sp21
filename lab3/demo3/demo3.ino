@@ -1,11 +1,12 @@
-/* University of Washington
- * ECE/CSE 474,  [5/12]
- *
- *   Sunny Hu
- *   Peter Gunarso
- *
- *   Lab 3, Data-Driven Scheduler
- *
+/**
+ * @file demo3.ino
+ * @authors Sunny Hu, Peter Gunarso
+ * @brief Arduino code for demo 3 (tasks 1, 2) using DDS
+ * @version 0.1
+ * @date 2021-05-19
+ * 
+ * @copyright Copyright (c) 2021
+ * 
  */
 
 #include "DDS.h"

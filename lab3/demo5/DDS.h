@@ -95,92 +95,108 @@ typedef struct TCB {
  * @param t Number of ms for task to sleep for
  */
 void sleep_474(long t);
+
 /**
  * @brief Manages sleep time and clocks each task sees. If a task cannot sleep for any longer, wakes up the task.
- * 
+ * @authors Sunny Hu, Peter Gunarso
  */
 void schedule_sync();
+
 /**
  * @brief Copies contents of one TCB into another
- * 
+ * @author Peter Gunarso
  * @param dst TCB to copy into, will overwrite current contents
  * @param src TCB to copy from
  */
 void copy_tcb(tcb * dst, tcb * src);
+
 /**
  * @brief Sets this task's state to DEAD and puts it into the dead task array
- * 
+ * @author Peter Gunarso
  */
 void task_self_quit();
+
 /**
  * @brief Sets the given task's state to READY and puts it into the runnable task array
- * 
+ * @author Peter Gunarso
  * @param task pointer to TCB to start, must be a valid TCB.
  */
 void task_start(tcb * task);
+
 /**
  * @brief Creates a TCB for a given task and puts it into the dead task array
- * 
+ * @author Peter Gunarso
  * @param fn_ptr Pointer to task function to create TCB around
  * @param name Name to give the TCB
  */
 void task_load(void (*fn_ptr)(), const char *);
+
 /**
  * @brief Finds a task in the dead task array which matches a given name
- * 
+ * @author Peter Guanrso
  * @param name Name of the task to find in the dead task array
  * @return tcb* Pointer to matching task, is NULL if the task is not found
  */
 tcb * find_dead_task(const char * name);
+
 /**
  * @brief Sets the frequency of OC4A to match a given frequency freq
- * 
+ * @authors Sunny Hu, Peter Gunarso
  * @param freq Desired frequency to set OC4A
  */
 void setOC4AFreq(uint32_t freq);
+
 /**
  * @brief Manages task 2 behavior, plays the theme from "Close Encounters of the Third Kind" once, pauses for 4 seconds, and plays again.
- * 
+ * @authors Sunny Hu, Peter Gunarso
  */
 void task2();
+
 /**
  * @brief Manages task 4 behavior, will run task 2 in the background
  *        and launch task4_1 and task4_2 accordingly.
- * 
+ * @author Peter Gunarso
  */
 void task4();
+
 /**
  * @brief Will display the currently playing frequency (global variable currFreq) on the 7-segment display
- * 
+ * @author Peter Gunarso
  */
 void task4_1();
+
 /**
  * @brief Will display a countdown in tenths of a second on the display
- * 
+ * @author Peter Gunarso
  */
 void task4_2();
+
 /**
  * @brief Sets up interrupts to run on timer 3 A, at a frequency of 500hz
- * 
+ * @authors Sunny Hu, Peter Gunarso
  */
 void interruptSetup();
+
 /**
  * @brief Sets up timer and ports needed to drive a speaker using OC4A
- * 
+ * @author Sunny Hu 
  */
 void speakerSetup();
+
 /**
  * @brief Sets up DDR for our 7-segment display
- * 
+ * @author Sunny Hu
  */
 void displaySetup();
+
 /**
  * @brief Sets up the LED used for this lab
- * 
+ * @authors Sunny Hu, Peter Gunarso
  */
 void ledSetup();
+
 /**
  * @brief Initializes the TCB arrays to be empty.
- * 
+ * @author Peter Gunarso
  */
 void DDSSetup();

@@ -1,19 +1,15 @@
-/* University of Washington
- * ECE/CSE 474,  [5/12]
- *
- *   Sunny Hu
- *   Peter Gunarso
- *
- *   Lab 3, Round Robin Scheduler
- *
+/**
+ * @file demo2.ino
+ * @authors Peter Gunarso, Sunny Hu
+ * @brief Arduino code for demo 2 (Task 1 & 2) using SRRI scheduler
+ * @version 0.1
+ * @date 2021-05-19
+ * 
+ * @copyright Copyright (c) 2021
+ * 
  */
 
 #include "SRRI.h"
-
-// uint32_t t1 = ADURATION;
-// uint32_t t2 = t1 + (uint32_t) NFREQ * (PLAY_DURATION);
-// uint32_t t3 = t2 + CDURATION;
-// uint32_t t4 = t3 + 1000;
 
 int reset1 = 0;
 int reset2 = 0;
@@ -25,12 +21,13 @@ volatile int sleepArr[NTASKS];
 volatile int stateArr[NTASKS];
 volatile long timeArr[NTASKS];
 
+/// Initializes all necessary i/o parts
 void setup() {
   // get all our outputs set up
   interruptSetup();
   speakerSetup();
   ledSetup();
-  // LED_PORT |= BIT2;
+
   // populate task array
   for (int i = 0; i < NTASKS; i++) {
     taskArr[i] = NULL;
@@ -44,6 +41,7 @@ void setup() {
   Serial.begin(9600);
 }
 
+/// Scheduler loop
 void loop() {
   for (int i = 0; i < NTASKS; i++) {
     if (taskArr[i] != NULL && stateArr[i] == READY) {
