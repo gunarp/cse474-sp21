@@ -1,3 +1,13 @@
+/**
+ * @file DDS.h
+ * @authors Peter Gunarso, Sunny Hu
+ * @brief Header file for demo5.ino
+ * @version 0.1
+ * @date 2021-05-19
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
 #define BIT0 1<<0
 #define BIT1 1<<1
 #define BIT2 1<<2
@@ -42,6 +52,7 @@ int melody[] = { note_d4, note_R, note_e4, note_R, note_c4, note_R, note_c3,
 
 #define NTASKS 10
 
+/// All codes for digits 0-9 on our 7-segment displays
 byte seven_seg_digits[10][7] = { { 1,1,1,1,1,1,0 },  // = 0
                                  { 0,1,1,0,0,0,0 },  // = 1
                                  { 1,1,0,1,1,0,1 },  // = 2
@@ -57,29 +68,119 @@ byte seven_seg_digits[10][7] = { { 1,1,1,1,1,1,0 },  // = 0
 typedef enum {READY, RUNNING, SLEEPING, DEAD} STATE;
 typedef enum flagState {PENDING, DONE} FLAG;
 
+/**
+ * @brief Struct to hold all of a Tasks running state
+ * 
+ */
 typedef struct TCB {
+  /// Task name
   char name[20];
+  /// Task function
   void (*fn_ptr)();
+  /// Task id
   int id;
+  /// Number of times task has been run
   int nTimes;
+  /// Amount of time in ms the task should sleep for
   int timeSleep;
+  /// Current clock time this task sees
   int time;
+  /// Running state of this task
   STATE state;
 } tcb;
 
+/**
+ * @brief Puts currently running function to sleep for t ms
+ * @authors Sunny Hu, Peter Gunarso
+ * @param t Number of ms for task to sleep for
+ */
 void sleep_474(long t);
+/**
+ * @brief Manages sleep time and clocks each task sees. If a task cannot sleep for any longer, wakes up the task.
+ * 
+ */
 void schedule_sync();
+/**
+ * @brief Copies contents of one TCB into another
+ * 
+ * @param dst TCB to copy into, will overwrite current contents
+ * @param src TCB to copy from
+ */
+void copy_tcb(tcb * dst, tcb * src);
+/**
+ * @brief Sets this task's state to DEAD and puts it into the dead task array
+ * 
+ */
 void task_self_quit();
+/**
+ * @brief Sets the given task's state to READY and puts it into the runnable task array
+ * 
+ * @param task pointer to TCB to start, must be a valid TCB.
+ */
 void task_start(tcb * task);
+/**
+ * @brief Creates a TCB for a given task and puts it into the dead task array
+ * 
+ * @param fn_ptr Pointer to task function to create TCB around
+ * @param name Name to give the TCB
+ */
 void task_load(void (*fn_ptr)(), const char *);
-tcb * find_dead_task(char * name);
+/**
+ * @brief Finds a task in the dead task array which matches a given name
+ * 
+ * @param name Name of the task to find in the dead task array
+ * @return tcb* Pointer to matching task, is NULL if the task is not found
+ */
+tcb * find_dead_task(const char * name);
+/**
+ * @brief Sets the frequency of OC4A to match a given frequency freq
+ * 
+ * @param freq Desired frequency to set OC4A
+ */
 void setOC4AFreq(uint32_t freq);
+/**
+ * @brief Manages task 2 behavior, plays the theme from "Close Encounters of the Third Kind" once, pauses for 4 seconds, and plays again.
+ * 
+ */
 void task2();
+/**
+ * @brief Manages task 4 behavior, will run task 2 in the background
+ *        and launch task4_1 and task4_2 accordingly.
+ * 
+ */
 void task4();
+/**
+ * @brief Will display the currently playing frequency (global variable currFreq) on the 7-segment display
+ * 
+ */
 void task4_1();
+/**
+ * @brief Will display a countdown in tenths of a second on the display
+ * 
+ */
 void task4_2();
+/**
+ * @brief Sets up interrupts to run on timer 3 A, at a frequency of 500hz
+ * 
+ */
 void interruptSetup();
+/**
+ * @brief Sets up timer and ports needed to drive a speaker using OC4A
+ * 
+ */
 void speakerSetup();
+/**
+ * @brief Sets up DDR for our 7-segment display
+ * 
+ */
 void displaySetup();
+/**
+ * @brief Sets up the LED used for this lab
+ * 
+ */
 void ledSetup();
+/**
+ * @brief Initializes the TCB arrays to be empty.
+ * 
+ */
 void DDSSetup();

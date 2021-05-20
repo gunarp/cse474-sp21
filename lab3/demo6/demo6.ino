@@ -1,11 +1,12 @@
-/* University of Washington
- * ECE/CSE 474,  [5/12]
- *
- *   Sunny Hu
- *   Peter Gunarso
- *
- *   Lab 3, Data-Driven Scheduler
- *
+/**
+ * @file demo6.ino
+ * @authors Peter Gunarso, Sunny Hu
+ * @brief Arduino Code for demo 6 (Task 5) using DDR scheduler
+ * @version 0.1
+ * @date 2021-05-19
+ * 
+ * @copyright Copyright (c) 2021
+ * 
  */
 
 #include "DDS.h"
@@ -19,17 +20,16 @@ volatile int id;
 volatile int currTask;
 volatile FLAG sFlag;
 
-volatile int currFreq;
-
+/// Initializes everything
 void setup() {
   id = 0;
-  // get all our outputs set up
+  /// Initalize outputs
   interruptSetup();
   speakerSetup();
   displaySetup();
   ledSetup();
 
-  // intialize our task tracking arrays
+  /// intialize our task tracking arrays
   DDSSetup();
 
   task_load(task5, "task5");
@@ -38,6 +38,7 @@ void setup() {
   task_start(find_dead_task("schedule_sync"));
 }
 
+/// Scheduler Loop
 void loop() {
   for (int i = 0; i < NTASKS; i++) {
     if (taskArr[i].fn_ptr != NULL && taskArr[i].state == READY) {
@@ -53,6 +54,7 @@ void loop() {
   }
 }
 
+/// Timer 3 Interrupt, sets sFlag
 ISR(TIMER3_COMPA_vect) {
   sFlag = DONE;
 }
@@ -203,7 +205,6 @@ void task2() {
     if ( taskArr[currTask].time >= ((unsigned long) i * PLAY_DURATION) &&
       taskArr[currTask].time < (((unsigned long) i + 1) * PLAY_DURATION) ) {
       setOC4AFreq(melody[i]);
-      currFreq = melody[i];
       sleep_474(PLAY_DURATION);
       return;
     }
@@ -212,7 +213,6 @@ void task2() {
   // stop playing for 4 seconds
   if (taskArr[currTask].time < PICKUP_TIME) {
     setOC4AFreq(0);
-    currFreq = 0;
     sleep_474(PAUSE_DURATION);
     return;
   }
@@ -222,7 +222,6 @@ void task2() {
     if (taskArr[currTask].time >= (PICKUP_TIME + ((unsigned long) i) * PLAY_DURATION) &&
         taskArr[currTask].time < (PICKUP_TIME + ((unsigned long) i + 1) * PLAY_DURATION)) {
       setOC4AFreq(melody[i]);
-      currFreq = melody[i];
       sleep_474(PLAY_DURATION);
       return;
     }
@@ -230,78 +229,7 @@ void task2() {
 
   // reset
   if (taskArr[currTask].time >= (PICKUP_TIME + (unsigned long) NFREQ * PLAY_DURATION)) {
-    currFreq = 0;
     taskArr[currTask].time = 0;
-    task_self_quit();
-  }
-}
-
-void task4() {
-  // launch task 2 to run on the first call to task4
-  if (taskArr[currTask].nTimes == 0) {
-    task_load(task2, "task2");
-    task_start(find_dead_task("task2"));
-    task_load(task4_1, "display_freqs");
-    task_load(task4_2, "countdown");
-  }
-
-  if (taskArr[currTask].time < NFREQ * PLAY_DURATION) {
-    task_start(find_dead_task("display_freqs"));
-    sleep_474(NFREQ * PLAY_DURATION);
-    return;
-  }
-
-  if (taskArr[currTask].time >= NFREQ * PLAY_DURATION &&
-      taskArr[currTask].time < PLAY_DURATION + PAUSE_DURATION) {
-    task_start(find_dead_task("countdown"));
-    sleep_474(PAUSE_DURATION);
-    return;
-  }
-
-  if (taskArr[currTask].time >= NFREQ * PLAY_DURATION + PAUSE_DURATION &&
-      taskArr[currTask].time < 2 * NFREQ * PLAY_DURATION + PAUSE_DURATION) {
-    task_start(find_dead_task("display_freqs"));
-    sleep_474(NFREQ * PLAY_DURATION);
-    return;
-  }
-
-  if (taskArr[currTask].time >= 2 * NFREQ * PLAY_DURATION + PAUSE_DURATION) {
-    taskArr[currTask].time = 0;
-    task_self_quit();
-  }
-}
-
-void task4_1() {
-  static int time;
-  static int digits[4];
-  static int displayStates[4] = {S0, S1, S2, S3};
-
-  // take digits out of currFreq
-  convert(digits, currFreq);
-
-  // display count on the 7seg display
-  for (int h = 0; h < 5; h++) {
-    for (int i = 0; i < 4; i++) {
-      int pin = 10 + i;
-      if ((taskArr[currTask].time / 5) >= (4 * h) + i && (taskArr[currTask].time / 5) < (4 * h) + (i + 1)) {
-        // turn 7seg & specified digit on
-        PORTB = displayStates[i];
-        byte *disp = seven_seg_digits[digits[i]];
-        send7(disp);
-        sleep_474(2);
-        return;
-      }
-    }
-  }
-
-  // reset
-  if (taskArr[currTask].time >= 100) {
-    time += taskArr[currTask].time;
-    taskArr[currTask].time = 0;
-  }
-  if (time >= NFREQ * PLAY_DURATION) {
-    time = 0;
-    PORTB = 0xFF;
     task_self_quit();
   }
 }

@@ -59,6 +59,7 @@ void loop() {
   }
 }
 
+/// Timer 3 Interrupt, sets sFlag
 ISR(TIMER3_COMPA_vect) {
   sFlag = DONE;
 }

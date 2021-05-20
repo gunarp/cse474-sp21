@@ -1,19 +1,15 @@
-/* University of Washington
- * ECE/CSE 474,  [5/12]
- *
- *   Sunny Hu
- *   Peter Gunarso
- *
- *   Lab 3, Round Robin Scheduler
- *
+/**
+ * @file demo4.ino
+ * @authors Sunny Hu, Peter Gunarso
+ * @brief Arduino Code for demo 4 (Tasks 1, 2, and 3) using SRRI scheduler
+ * @version 0.1
+ * @date 2021-05-19
+ * 
+ * @copyright Copyright (c) 2021
+ * 
  */
 
 #include "SRRI.h"
-
-// uint32_t t1 = ADURATION;
-// uint32_t t2 = t1 + (uint32_t) NFREQ * (PLAY_DURATION);
-// uint32_t t3 = t2 + CDURATION;
-// uint32_t t4 = t3 + 1000;
 
 int reset1 = 0;
 int reset2 = 0;
@@ -25,13 +21,14 @@ volatile int sleepArr[NTASKS];
 volatile int stateArr[NTASKS];
 volatile long timeArr[NTASKS];
 
+/// Initaizlie outputs and timers
 void setup() {
   // get all our outputs set up
   interruptSetup();
   speakerSetup();
   ledSetup();
   displaySetup();
-  // LED_PORT |= BIT2;
+
   // populate task array
   for (int i = 0; i < NTASKS; i++) {
     taskArr[i] = NULL;
@@ -49,6 +46,7 @@ void setup() {
   digitalWrite(LED_BUILTIN, LOW);
 }
 
+/// Scheduler Loop
 void loop() {
   for (int i = 0; i < NTASKS; i++) {
     if (taskArr[i] != NULL && stateArr[i] == READY) {
@@ -64,6 +62,7 @@ void loop() {
   }
 }
 
+/// Timer 3 Interrupt, sets sFlag
 ISR(TIMER3_COMPA_vect) {
   sFlag = DONE;
 }
@@ -86,7 +85,7 @@ void schedule_sync() {
       sleepArr[i] -= 2;
       // wake up any sleeping tasks
       if (sleepArr[i] < 2) {
-        // reset to t = 0 in sleep array (not sure if needed)
+        // reset to t = 0 in sleep array
         sleepArr[i] = 0;
         // change corresponding state from SLEEPING to READY
         stateArr[i] = READY;

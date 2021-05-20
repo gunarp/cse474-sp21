@@ -1,11 +1,12 @@
-/* University of Washington
- * ECE/CSE 474,  [5/12]
- *
- *   Sunny Hu
- *   Peter Gunarso
- *
- *   Lab 3, Data-Driven Scheduler
- *
+/**
+ * @file demo5.ino
+ * @authors Peter Gunarso, Sunny Hu
+ * @brief Arduino code for demo 5 (Task 4) using DDR scheduler
+ * @version 0.1
+ * @date 2021-05-19
+ * 
+ * @copyright Copyright (c) 2021
+ * 
  */
 
 #include "DDS.h"
@@ -21,6 +22,7 @@ volatile FLAG sFlag;
 
 volatile int currFreq;
 
+/// Initialize outputs
 void setup() {
   id = 0;
   // get all our outputs set up
@@ -37,6 +39,7 @@ void setup() {
   task_start(find_dead_task("schedule_sync"));
 }
 
+/// Scheduler Loop
 void loop() {
   for (int i = 0; i < NTASKS; i++) {
     if (taskArr[i].fn_ptr != NULL && taskArr[i].state == READY) {
@@ -52,6 +55,7 @@ void loop() {
   }
 }
 
+/// Timer 3 Interrupt, sets sFlag
 ISR(TIMER3_COMPA_vect) {
   sFlag = DONE;
 }
