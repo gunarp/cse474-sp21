@@ -13,9 +13,7 @@
 
 QueueHandle_t task34Queue;
 TaskHandle_t task3Handle;
-double vReal[NSAMPLES];
-double vImag[NSAMPLES];
-arduinoFFT FFT = arduinoFFT();
+
 
 // the setup function runs once when you press reset or power the board
 void setup() {
@@ -85,18 +83,20 @@ void TaskTheme(void * pvParameters) {
 }
 
 void Task34Starter() {
-  // double arr[NSAMPLES];
+  char arr[NSAMPLES];
   // generate an array of 512 random 16-bit longs
   for (int i = 0; i < NSAMPLES; i++) {
-    vReal[i] = random(-100, 100);
+    arr[i] = random(-100, 100);
   }
 
   // intialize the queue which tasks 3 and 4 will use to communicate
+  // FreeRTOS max queue size is only 128 bytes, so we have to split up our queue to send
+  // queues of larger sizes (this does assume that we'll send more than 2 values)
   task34Queue = xQueueCreate((unsigned int)NSAMPLES / 4, (unsigned int)sizeof(double));
 
-  xTaskCreate(Task3, "Task3", 500, &vReal, 1, &task3Handle);
+  xTaskCreate(Task3, "Task3", 128, &arr, 1, &task3Handle);
 
-  xTaskCreate(Task4, "Task4", 500, &task3Handle, 0, NULL);
+  xTaskCreate(Task4, "Task4", 4269, &task3Handle, 0, NULL);
 
 }
 
@@ -123,7 +123,9 @@ void Task3(void * pvParameters) {
 
 
 void Task4(void * pvParameters) {
-  // Serial.println(uxTaskGetStackHighWaterMark(NULL));
+  double vReal[NSAMPLES];
+  double vImag[NSAMPLES];
+  arduinoFFT FFT = arduinoFFT();
 
   TickType_t start;
   for (int i = 0; i < 5; i++) {
