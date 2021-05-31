@@ -1,5 +1,8 @@
 #include "setup.h"
 #include <Arduino_FreeRTOS.h>
+#include <queue.h>
+#include <task.h>
+#include <arduinoFFT.h>
 
 ////////////////////////////////////////////////
 // APPROVED FOR ECE 474   Spring 2021
@@ -8,9 +11,11 @@
 //   to your setup.
 ////////////////////////////////////////////////
 
-// define two tasks for Blink & AnalogRead
-void TaskBlink( void * pvParameters );
-void TaskTheme( void * pvParameters );
+QueueHandle_t task34Queue;
+TaskHandle_t task3Handle;
+double vReal[NSAMPLES];
+double vImag[NSAMPLES];
+arduinoFFT FFT = arduinoFFT();
 
 // the setup function runs once when you press reset or power the board
 void setup() {
@@ -30,16 +35,12 @@ void setup() {
     ,  2  // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
     ,  NULL );
 
-  xTaskCreate(
-    TaskTheme
-    , "Theme"
-    , 128
-    , NULL
-    , 1
-    , NULL  );
+  xTaskCreate(TaskTheme, "Theme", 128, NULL, 3, NULL);
 
-  // Now the task scheduler, which takes over control of scheduling individual tasks, is automatically started.
-  //  (note how the above comment is WRONG!!!)
+  Task34Starter();
+
+  delay(500);
+
   vTaskStartScheduler();
 }
 
@@ -54,61 +55,103 @@ void loop()
 
 void TaskBlink(void *pvParameters)  // This is a task.
 {
- // (void) pvParameters;  // allocate stack space for params
-
-/*
-  Blink
-  Turns on an LED on for one second, then off for one second, repeatedly.
-
-  Most Arduinos have an on-board LED you can control. On the UNO, LEONARDO, MEGA, and ZERO
-  it is attached to digital pin 13, on MKR1000 on pin 6. LED_BUILTIN takes care
-  of use the correct LED pin whatever is the board used.
-
-  The MICRO does not have a LED_BUILTIN available. For the MICRO board please substitute
-  the LED_BUILTIN definition with either LED_BUILTIN_RX or LED_BUILTIN_TX.
-  e.g. pinMode(LED_BUILTIN_RX, OUTPUT); etc.
-
-  If you want to know what pin the on-board LED is connected to on your Arduino model, check
-  the Technical Specs of your board  at https://www.arduino.cc/en/Main/Products
-
-  This example code is in the public domain.
-
-  modified 8 May 2014
-  by Scott Fitzgerald
-
-  modified 2 Sep 2016
-  by Arturo Guadalupi
-*/
-
-  // initialize digital LED_BUILTIN on pin 13 as an output.
-  pinMode(LED_BUILTIN, OUTPUT);
+  // initialize led pin as an output.
+  ledSetup();
 
   for (;;) // A Task shall never return or exit.
   {
-    digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
-    vTaskDelay( 250 / portTICK_PERIOD_MS ); // wait for one second
-    digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
-    vTaskDelay( 100 / portTICK_PERIOD_MS ); // wait for one second
+    LED_PORT &= ~LED_BIT; // turn on
+    vTaskDelay( pdMS_TO_TICKS(100) ); // wait for one second
+    LED_PORT |= LED_BIT; // turn off
+    vTaskDelay( pdMS_TO_TICKS(200) ); // wait for one second
   }
 }
 
 void TaskTheme(void * pvParameters) {
-  setupSpeaker();
-
+  speakerSetup();
   // Play the theme NPLAY times
   for (int i = 0; i < NPLAY; i++) {
     for (int j = 0; j < NFREQ; j++) {
       setOC4AFreq(melody[j]);
-      pdMS_TO_TICKS(PLAY_DURATION);
+      vTaskDelay(pdMS_TO_TICKS(PLAY_DURATION)); // wait for play duration ms
     }
     setOC4AFreq(0);
 
     // add fencepost to waiting
-    if (i != 2) pdMS_TO_TICKS(1500);
+    if (i != 2) vTaskDelay(pdMS_TO_TICKS(1500));
   }
-
   // delete the task
   vTaskDelete(NULL);
+}
+
+void Task34Starter() {
+  // double arr[NSAMPLES];
+  // generate an array of 512 random 16-bit longs
+  for (int i = 0; i < NSAMPLES; i++) {
+    vReal[i] = random(-100, 100);
+  }
+
+  // intialize the queue which tasks 3 and 4 will use to communicate
+  task34Queue = xQueueCreate((unsigned int)NSAMPLES / 4, (unsigned int)sizeof(double));
+
+  xTaskCreate(Task3, "Task3", 500, &vReal, 1, &task3Handle);
+
+  xTaskCreate(Task4, "Task4", 500, &task3Handle, 0, NULL);
+
+}
+
+void Task3(void * pvParameters) {
+  double * arr = ((double **) pvParameters)[0];
+
+  TickType_t start;
+  for (int i = 0; i < 5; i++) {
+    start = xTaskGetTickCount();
+    // transfer the entire contents of arr over the task34Queue
+    for (int j = 0; j < 4; j++) {
+      xQueueSendToBack(task34Queue, &arr[(NSAMPLES / 4) * j], 0);
+      xTaskNotifyWait(0x00, 0xffffffff, NULL, portMAX_DELAY);
+    }
+    xTaskNotifyWait(0x00, 0xffffffff, NULL, portMAX_DELAY);
+    Serial.print("Task 3 Measured Time : ");
+    Serial.println((xTaskGetTickCount() - start) * portTICK_PERIOD_MS);
+  }
+  Serial.print("Task 3 HWM:");
+  Serial.println(uxTaskGetStackHighWaterMark(NULL));
+
+  vTaskDelete(NULL);
+}
+
+
+void Task4(void * pvParameters) {
+  // Serial.println(uxTaskGetStackHighWaterMark(NULL));
+
+  TickType_t start;
+  for (int i = 0; i < 5; i++) {
+    start = xTaskGetTickCount();
+    for (int j = 0; j < NSAMPLES; j++) {
+      vImag[j] = 0.0; // reset the imaginary part
+    }
+
+    for (int j = 0; j < 4; j++) {
+      xQueueReceive(task34Queue, &vReal[(NSAMPLES / 4) * j], portMAX_DELAY);
+      xTaskNotify(task3Handle, 0, eNoAction);
+    }
+
+    // fft calculations
+    FFT.Compute(vReal, vImag, NSAMPLES, FFT_FORWARD);
+    Serial.print("Task 4 measured time : ");
+    Serial.println((xTaskGetTickCount() - start) * portTICK_PERIOD_MS);
+    xTaskNotify(task3Handle, 0, eNoAction);
+  }
+  Serial.print("Task 4 HWM:");
+  Serial.println(uxTaskGetStackHighWaterMark(NULL));
+
+  vTaskDelete(NULL);
+}
+
+void ledSetup() {
+  LED_DDR |= LED_BIT;
+  LED_PORT |= LED_BIT;
 }
 
 void speakerSetup() {
@@ -137,7 +180,7 @@ void speakerSetup() {
 
   // OC4A is tied to pin 6, which is controlled by PH3
   // set pin 6 as an output pin
-  SPEAKER_DDR |= BIT3;
+  SPEAKER_DDR |= 1 << 3;
 }
 
 // sets the OCR4A to make the clock cycle frequency

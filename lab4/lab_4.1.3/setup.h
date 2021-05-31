@@ -4,15 +4,10 @@
  * @brief Header file for demo1.ino
  * @version 0.1
  * @date 2021-05-19
- * 
+ *
  * @copyright Copyright (c) 2021
- * 
+ *
  */
-
-#define BIT0 1<<0
-#define BIT1 1<<1
-#define BIT2 1<<2
-#define BIT3 1<<3
 
 #define TIMER_REG_A TCCR4A
 #define TIMER_REG_B TCCR4B
@@ -21,8 +16,10 @@
 #define PRESCALER OCR4A
 #define LED_DDR DDRL
 #define LED_PORT PORTL
+#define LED_BIT 1 << 2
 #define SPEAKER_DDR DDRH
 #define SPEAKER_PORT PORTH
+#define NSAMPLES 512
 
 #define PLAY_DURATION 200
 #define NPLAY 3
@@ -38,9 +35,22 @@
 int melody[] = { note_d4, note_R, note_e4, note_R, note_c4, note_R, note_c3,
                  note_R, note_g3, note_g3, note_g3, note_g3, note_R };
 
+// define two tasks for Blink & AnalogRead
+void TaskBlink(void * pvParameters);
+void TaskTheme(void * pvParameters);
+void Task34Starter(void * pvParameters);
+void Task3(void * pvParameters);
+void Task4(void * pvParameters);
+
+/**
+ * @brief
+ * @author
+ */
+void ledSetup();
+
 /**
  * @brief Sets up timer and ports needed to drive a speaker using OC4A
- * @author Sunny Hu 
+ * @author Sunny Hu
  */
 void speakerSetup();
 
