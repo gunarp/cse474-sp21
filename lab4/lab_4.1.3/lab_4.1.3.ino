@@ -12,6 +12,7 @@
 ////////////////////////////////////////////////
 
 QueueHandle_t task34Queue;
+QueueHandle_t task4TimeQueue;
 TaskHandle_t task3Handle;
 
 
@@ -89,34 +90,26 @@ void Task34Starter() {
     arr[i] = random(-100, 100);
   }
 
-  // intialize the queue which tasks 3 and 4 will use to communicate
+  // intialize the queues which tasks 3 and 4 will use to communicate
   // FreeRTOS max queue size is only 128 bytes, so we have to split up our queue to send
   // queues of larger sizes (this does assume that we'll send more than 2 values)
-  task34Queue = xQueueCreate((unsigned int)NSAMPLES / 4, (unsigned int)sizeof(double));
+  task34Queue = xQueueCreate(1, (unsigned int)sizeof(double *));
+  task4TimeQueue = xQueueCreate(1, (unsigned int) sizeof(long));
 
   xTaskCreate(Task3, "Task3", 128, &arr, 1, &task3Handle);
 
   xTaskCreate(Task4, "Task4", 4269, &task3Handle, 0, NULL);
-
 }
 
 void Task3(void * pvParameters) {
+  long total_time;
   double * arr = ((double **) pvParameters)[0];
 
-  TickType_t start;
-  for (int i = 0; i < 5; i++) {
-    start = xTaskGetTickCount();
-    // transfer the entire contents of arr over the task34Queue
-    for (int j = 0; j < 4; j++) {
-      xQueueSendToBack(task34Queue, &arr[(NSAMPLES / 4) * j], 0);
-      xTaskNotifyWait(0x00, 0xffffffff, NULL, portMAX_DELAY);
-    }
-    xTaskNotifyWait(0x00, 0xffffffff, NULL, portMAX_DELAY);
-    Serial.print("Task 3 Measured Time : ");
-    Serial.println((xTaskGetTickCount() - start) * portTICK_PERIOD_MS);
-  }
-  Serial.print("Task 3 HWM:");
-  Serial.println(uxTaskGetStackHighWaterMark(NULL));
+  xQueueSendToBack(task34Queue, arr, 0);
+  xQueueReceive(task4TimeQueue, &total_time, portMAX_DELAY);
+
+  Serial.print("Average FFT Time: ");
+  Serial.println((double) total_time / 5.0);
 
   vTaskDelete(NULL);
 }
@@ -127,26 +120,20 @@ void Task4(void * pvParameters) {
   double vImag[NSAMPLES];
   arduinoFFT FFT = arduinoFFT();
 
-  TickType_t start;
+  double * arr;
+  unsigned long time = millis();
+  xQueueReceive(task34Queue, &arr, portMAX_DELAY);
   for (int i = 0; i < 5; i++) {
-    start = xTaskGetTickCount();
     for (int j = 0; j < NSAMPLES; j++) {
+      vReal[j] = arr[j];
       vImag[j] = 0.0; // reset the imaginary part
-    }
-
-    for (int j = 0; j < 4; j++) {
-      xQueueReceive(task34Queue, &vReal[(NSAMPLES / 4) * j], portMAX_DELAY);
-      xTaskNotify(task3Handle, 0, eNoAction);
     }
 
     // fft calculations
     FFT.Compute(vReal, vImag, NSAMPLES, FFT_FORWARD);
-    Serial.print("Task 4 measured time : ");
-    Serial.println((xTaskGetTickCount() - start) * portTICK_PERIOD_MS);
-    xTaskNotify(task3Handle, 0, eNoAction);
   }
-  Serial.print("Task 4 HWM:");
-  Serial.println(uxTaskGetStackHighWaterMark(NULL));
+  time = millis() - time;
+  xQueueSendToBack(task4TimeQueue, &time, 0);
 
   vTaskDelete(NULL);
 }
