@@ -19,7 +19,7 @@ int mode = 1;
 
 void vKeypadSetup() {
     // change to match output pins
-    // Serial.write("keypad setup starting");
+    Serial.println("keypad setup");
 
     byte rowPins[ROWS] = {25, 27, 29, 31};
     byte colPins[COLS] = {33, 35, 37, 39};
@@ -27,15 +27,15 @@ void vKeypadSetup() {
     customKeypad = (Keypad *) malloc(sizeof(Keypad));
     *customKeypad = Keypad(makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS);
 
-    // Serial.write("keypad setup done");
+    Serial.println("keypad setup done");
 }
 
 void vTaskKeypad(void * pvParameters) {
+    Serial.println("starting task keypad");
     // setup
-    vKeypadSetup();
+    // vKeypadSetup();
     ServoCommand cmd;
     // poll forever
-    Serial.println("hi");
     for(;;) {
         switch(customKeypad->getKey()) {
             case '2':

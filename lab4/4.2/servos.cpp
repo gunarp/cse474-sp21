@@ -6,7 +6,7 @@ static Servo servV;
 QueueHandle_t ServoCommandQueue;
 
 void vServoSetup() {
-    // Serial.println("Servo setup starting");
+    Serial.println("Servo setup starting");
     // set servo output pins
     servH.attach(HSERVPIN);
     servV.attach(VSERVPIN);
@@ -17,16 +17,19 @@ void vServoSetup() {
 
     // set up the servo command queue
     ServoCommandQueue = xQueueCreate(1, sizeof(ServoCommand));
-    // Serial.println("Servo setup ending");
+    Serial.println("Servo setup ending");
 }
 
 void vTaskServo(void * pvParameters) {
+    // Serial.println(uxTaskGetStackHighWaterMark(NULL));
+    Serial.println("starting task servo");
     ServoCommand command;
     int valueV = servV.read();
     int valueH = servH.read();
+    int a = *((int *) NULL);
     for (;;) {
         // wait for a command forever
-        xQueueReceive(ServoCommandQueue, &command, portMAX_DELAY);
+        xQueueReceive(ServoCommandQueue, &command, pdMS_TO_TICKS(50));
         valueV = servV.read();
         valueH = servH.read();
         // move the servos based on incoming command, note that
@@ -54,7 +57,7 @@ void vTaskServo(void * pvParameters) {
         }
         servV.write(valueV);
         servH.write(valueH);
-        vTaskDelay(pdMS_TO_TICKS(50));
+        // vTaskDelay(pdMS_TO_TICKS(50));
     }
 }
 

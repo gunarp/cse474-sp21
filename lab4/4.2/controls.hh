@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <Keypad.h>
 
 #ifndef CONTROLS_H_

@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <Servo.h>
 #include <Arduino_FreeRTOS.h>
 #include <queue.h>
@@ -10,7 +11,7 @@
 // degrees to move per command
 #define STEP 5
 
-enum ServoCommand {IN, OUT, LEFT, RIGHT};
+enum ServoCommand {NONE, IN, OUT, LEFT, RIGHT};
 
 // set up servo pins and control queue
 void vServoSetup();
