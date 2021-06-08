@@ -96,12 +96,15 @@ void vTaskKeypad(void * pvParameters) {
 
             case 'A':
                 // voice mode
-                mode = 0;
+                if (mode) {
+                    xTaskNotify(*(TaskHandle_t *) pvParameters, 0, eNoAction);
+                    mode = 0;
+                }
                 break;
 
             case 'B':
                 // keypad mode
-                mode = 1;
+                if (!mode) mode = 1;
                 break;
 
             default :
@@ -114,24 +117,24 @@ void vTaskKeypad(void * pvParameters) {
 }
 
 void vNoiseSensorControl(void * pvParameters) {
-    int max = -1;
+    int max = 0;
     for (;;) {
-        if (mode) vTaskDelay(pdMS_TO_TICKS(200));
+        if (mode) xTaskNotifyWait(0x00, 0xffffffff, NULL, portMAX_DELAY);
         else {
-            uint readVal;
+            max = 0;
             for (int i = 0; i < 5; i++) {
-                readVal = analogRead(A3); // change pin to whatever value
-
+                int readVal = analogRead(A3); // change pin to whatever value
                 // calculate absolute value wrt. potentiometer setting
-                readVal = (readVal - 400) > 0 ? (readVal - 400) : (400 - readVal); // make variable for 400
+                readVal -= 400;
+                if (readVal < 0) readVal *= -1;
 
                 // set max val
                 max = readVal > max ? readVal : max;
                 vTaskDelay(pdMS_TO_TICKS(40)); // create variable
             }
             // send read value to fan pwm
-            double sendVal = (readVal - 5)/600.0 > 1 ? 1 : (readVal - 5)/600.0;
-            xQueueSend(FanPWMQueue, &sendVal, 0);
+            int val = map(max, 0, 200, 0, 255);
+            xQueueSend(FanPWMQueue, &val, 0);
         }
     }
 }

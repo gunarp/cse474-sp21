@@ -13,11 +13,16 @@ void setup() {
     // create tasks
     xTaskCreate(TaskBlink,  "Blink",  128,  NULL,  0,  NULL );
     xTaskCreate(vTaskServo, "Servo Manager", 128, NULL, 2, NULL);
-    // delay(500);
-    xTaskCreate(vTaskKeypad, "Keypad Manager", 270, NULL, 1, NULL);
-    // xTaskCreate(TaskRGB, "RGB LED", 128, NULL, 1, NULL);
+    xTaskCreate(TaskRGB, "RGB LED", 128, NULL, 1, NULL);
+
     xTaskCreate(vTaskFanDigitial, "Digital Fan Manager", 128, NULL, 2, NULL);
     xTaskCreate(vTaskFanAnalog, "Analog Fan Manager", 128, NULL, 2, NULL);
+
+    TaskHandle_t NoiseControl;
+    xTaskCreate(vNoiseSensorControl, "Noise Sensor Controller", 128, NULL, 2, &NoiseControl);
+    xTaskCreate(vTaskSerial, "Serial Watchdog", 128, NULL, 0, NULL);
+    xTaskCreate(vTaskKeypad, "Keypad and State Manager", 270, &NoiseControl, 3, NULL);
+
 
     delay(500);
 

@@ -36,8 +36,6 @@ void vTaskFanDigitial(void * pvParameters) {
             break;
         }
 
-        Serial.print("fanVal: ");
-        Serial.println(fanVal);
         analogWrite(FANPIN, fanVal);
     }
 }
@@ -49,8 +47,6 @@ void vTaskFanAnalog(void * pvParameters) {
     int pwm;
     for (;;) {
         xQueueReceive(FanPWMQueue, &pwm, portMAX_DELAY);
-        Serial.print("sent pwm: ");
-        Serial.println(pwm);
         analogWrite(FANPIN, pwm);
     }
 }

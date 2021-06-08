@@ -6,6 +6,7 @@
 #include "servos.hh"
 #include "controls.hh"
 #include "fan.hh"
+#include "serial.hh"
 
 extern QueueHandle_t ServoCommandQueue;
 extern QueueHandle_t FanCommandQueue;

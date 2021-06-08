@@ -54,13 +54,8 @@ void vTaskServo(void * pvParameters) {
         default:
             break;
         }
-        Serial.print("valueV: ");
-        Serial.println(valueV);
-        Serial.print("valueH: ");
-        Serial.println(valueH);
         analogWrite(VSERVPIN, valueV);
         analogWrite(HSERVPIN, valueH);
-        // vTaskDelay(pdMS_TO_TICKS(50));
     }
 }
 
