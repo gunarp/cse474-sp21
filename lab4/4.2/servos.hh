@@ -23,4 +23,3 @@ void vServoSetup();
 void vTaskServo(void *);
 
 #endif  // SERVO_H_
-

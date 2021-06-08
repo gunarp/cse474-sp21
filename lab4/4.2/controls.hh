@@ -9,8 +9,12 @@
 // Keypad.ino
 // ============================================
 
+
 // task for keypad
 void vTaskKeypad(void * pvParameters);
 void vNoiseSensorControl(void * pvParameters);
+
+void RGB_color(int red_light_value, int green_light_value, int blue_light_value);
+void TaskRGB(void *pvParameters);
 
 #endif  // CONTROLS_H_

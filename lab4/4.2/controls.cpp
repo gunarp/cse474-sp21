@@ -7,16 +7,20 @@ const byte COLS = 4;
 const byte rowPins[ROWS] = {25, 27, 29, 31};
 const byte colPins[COLS] = {33, 35, 37, 39};
 
+int red_light_pin= 3;
+int green_light_pin = 2;
+int blue_light_pin = 23;
+
+// 0 = voice
+// 1 = control
+static int mode;
+
 char hexaKeys[ROWS][COLS] = {
   {'1', '2', '3', 'A'},
   {'4', '5', '6', 'B'},
   {'7', '8', '9', 'C'},
   {'*', '0', '#', 'D'}
 };
-
-// 0 = voice
-// 1 = control
-static int mode = 1;
 
 void vTaskKeypad(void * pvParameters) {
     vTaskDelay(pdMS_TO_TICKS(100));
@@ -124,4 +128,27 @@ void vNoiseSensorControl(void * pvParameters) {
 
         }
     }
+}
+
+void RGB_color(int red_light_value, int green_light_value, int blue_light_value)
+ {
+  analogWrite(red_light_pin, red_light_value);
+  analogWrite(green_light_pin, green_light_value);
+  analogWrite(blue_light_pin, blue_light_value);
+}
+
+void TaskRGB(void *pvParameters) {
+  vTaskDelay(pdMS_TO_TICKS(100));
+  pinMode(red_light_pin, OUTPUT);
+  pinMode(green_light_pin, OUTPUT);
+  pinMode(blue_light_pin, OUTPUT);
+  for(;;) {
+    if(mode == 0) {
+      RGB_color(255, 0, 0); // Red
+    }
+    if(mode == 1) {
+      RGB_color(0, 255, 0); // Green
+    }
+    vTaskDelay( pdMS_TO_TICKS(20) );
+  }
 }

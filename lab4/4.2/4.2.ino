@@ -15,6 +15,7 @@ void setup() {
     xTaskCreate(vTaskServo, "Servo Manager", 128, NULL, 2, NULL);
     // delay(500);
     xTaskCreate(vTaskKeypad, "Keypad Manager", 270, NULL, 1, NULL);
+    xTaskCreate(TaskRGB, "RGB LED", 128, NULL, 1, NULL);
 
     delay(500);
 
