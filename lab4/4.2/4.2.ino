@@ -1,16 +1,16 @@
 #include "4.2.h"
 
-#include "fan.hh"
-#include "controls.hh"
-#include "serial.hh"
-#include "servos.hh"
+void setup() {
+    // set up i/o devices
+    Serial.begin(19200);
+    // vServoSetup();
 
-#include <Arduino_FreeRTOS.h>
+    // create tasks
+    // xTaskCreate(vTaskServo, "Servo Manager", 128, NULL, 0, NULL);
+    xTaskCreate(vTaskKeypad, "Keypad Manager", 128, NULL, 1, NULL);
 
-void setup()
-{
+    vTaskStartScheduler();
 }
 
-void loop()
-{
+void loop() {
 }

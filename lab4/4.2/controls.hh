@@ -1,25 +1,17 @@
-#include "4.2.h"
 #include <Keypad.h>
 
-#ifndef KEYPAD_H_
-#define KEYPAD_H_
+#ifndef CONTROLS_H_
+#define CONTROLS_H_
 
-const byte ROWS = 4;
-const byte COLS = 4;
-
-char hexaKeys[ROWS][COLS] = {
-  {'1', '2', '3', 'A'},
-  {'4', '5', '6', 'B'},
-  {'7', '8', '9', 'C'},
-  {'*', '0', '#', 'D'}
-};
+// ============================================
+// Keypad.ino
+// ============================================
 
 // note: code from [insert website link here]
-void keypadSetup();
+void vKeypadSetup();
 
 // task for keypad
-void taskKeypad();
+void vTaskKeypad(void * pvParameters);
+void vNoiseSensorControl(void * pvParameters);
 
-
-
-#endif // KEYPAD_H_
+#endif  // CONTROLS_H_
