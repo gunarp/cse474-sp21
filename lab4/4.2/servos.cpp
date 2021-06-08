@@ -1,62 +1,65 @@
 #include "servos.hh"
 
-static Servo servH;
-static Servo servV;
-
 QueueHandle_t ServoCommandQueue;
 
 void vServoSetup() {
-    Serial.println("Servo setup starting");
+    // Serial.println("Servo setup starting");
     // set servo output pins
-    servH.attach(HSERVPIN);
-    servV.attach(VSERVPIN);
+    pinMode(HSERVPIN, OUTPUT);
+    pinMode(VSERVPIN, OUTPUT);
 
     // set servos in neutral position
-    servH.write(90);
-    servV.write(90);
+    analogWrite(HSERVPIN, CENTERPWM);
+    analogWrite(VSERVPIN, CENTERPWM);
 
     // set up the servo command queue
     ServoCommandQueue = xQueueCreate(1, sizeof(ServoCommand));
-    Serial.println("Servo setup ending");
+    // Serial.println("Servo setup ending");
 }
 
 void vTaskServo(void * pvParameters) {
-    // Serial.println(uxTaskGetStackHighWaterMark(NULL));
-    Serial.println("starting task servo");
+    vTaskDelay(pdMS_TO_TICKS(50));
+    // Serial.println("starting task servo");
     ServoCommand command;
-    int valueV = servV.read();
-    int valueH = servH.read();
-    int a = *((int *) NULL);
+    int valueV = CENTERPWM;
+    int valueH = CENTERPWM;
     for (;;) {
         // wait for a command forever
-        xQueueReceive(ServoCommandQueue, &command, pdMS_TO_TICKS(50));
-        valueV = servV.read();
-        valueH = servH.read();
+        xQueueReceive(ServoCommandQueue, &command, portMAX_DELAY);
         // move the servos based on incoming command, note that
         // a higher degree turns the servo
         switch (command)
         {
         case IN:
-            valueV -= STEP;
+            valueV = max(valueV - STEP, MINPWM);
             break;
 
         case OUT:
-            valueV += STEP;
+            valueV = min(valueV + STEP, MAXPWM);
             break;
 
         case LEFT:
-            valueH += STEP;
+            valueH = max(valueH - STEP, MINPWM);
             break;
 
         case RIGHT:
-            valueH -= STEP;
+            valueH = min(valueH + STEP, MAXPWM);
+            break;
+
+        case RESET:
+            valueV = CENTERPWM;
+            valueH = CENTERPWM;
             break;
 
         default:
             break;
         }
-        servV.write(valueV);
-        servH.write(valueH);
+        Serial.print("valueV: ");
+        Serial.println(valueV);
+        Serial.print("valueH: ");
+        Serial.println(valueH);
+        analogWrite(VSERVPIN, valueV);
+        analogWrite(HSERVPIN, valueH);
         // vTaskDelay(pdMS_TO_TICKS(50));
     }
 }

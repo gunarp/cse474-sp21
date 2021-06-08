@@ -1,10 +1,11 @@
 #include "4.2.h"
 #include "controls.hh"
 
-static Keypad * customKeypad;
-
 const byte ROWS = 4;
 const byte COLS = 4;
+
+const byte rowPins[ROWS] = {25, 27, 29, 31};
+const byte colPins[COLS] = {33, 35, 37, 39};
 
 char hexaKeys[ROWS][COLS] = {
   {'1', '2', '3', 'A'},
@@ -15,33 +16,31 @@ char hexaKeys[ROWS][COLS] = {
 
 // 0 = voice
 // 1 = control
-int mode = 1;
-
-void vKeypadSetup() {
-    // change to match output pins
-    Serial.println("keypad setup");
-
-    byte rowPins[ROWS] = {25, 27, 29, 31};
-    byte colPins[COLS] = {33, 35, 37, 39};
-
-    customKeypad = (Keypad *) malloc(sizeof(Keypad));
-    *customKeypad = Keypad(makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS);
-
-    Serial.println("keypad setup done");
-}
+static int mode = 1;
 
 void vTaskKeypad(void * pvParameters) {
-    Serial.println("starting task keypad");
+    vTaskDelay(pdMS_TO_TICKS(100));
     // setup
-    // vKeypadSetup();
     ServoCommand cmd;
+
+    Keypad customKeypad = Keypad(makeKeymap(hexaKeys), (byte *) rowPins, (byte *) colPins, ROWS, COLS);
+
     // poll forever
     for(;;) {
-        switch(customKeypad->getKey()) {
+        cmd = NONE;
+        char key = customKeypad.getKey();
+        switch(key) {
+            case '5':
+                // reset position
+                if (mode) {
+                    cmd = RESET;
+                    xQueueSendToBack(ServoCommandQueue, &cmd, 0);
+                }
+                break;
+
             case '2':
                 // in
                 if (mode) {
-                    Serial.println("up");
                     cmd = IN;
                     xQueueSendToBack(ServoCommandQueue, &cmd, 0);
                 }
@@ -50,7 +49,6 @@ void vTaskKeypad(void * pvParameters) {
             case '8':
                 // out
                 if (mode) {
-                    Serial.println("out");
                     cmd = OUT;
                     xQueueSendToBack(ServoCommandQueue, &cmd, 0);
                 }
@@ -100,7 +98,7 @@ void vTaskKeypad(void * pvParameters) {
                 // don't handle other buttons
                 break;
         }
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(20));
     }
     vTaskDelete(NULL);
 }

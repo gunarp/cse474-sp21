@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <Servo.h>
 #include <Arduino_FreeRTOS.h>
 #include <queue.h>
 #ifndef SERVO_H_
@@ -11,7 +10,11 @@
 // degrees to move per command
 #define STEP 5
 
-enum ServoCommand {NONE, IN, OUT, LEFT, RIGHT};
+#define MINPWM 1330
+#define MAXPWM 1530
+#define CENTERPWM 1430
+
+enum ServoCommand {NONE, RESET, IN, OUT, LEFT, RIGHT};
 
 // set up servo pins and control queue
 void vServoSetup();
