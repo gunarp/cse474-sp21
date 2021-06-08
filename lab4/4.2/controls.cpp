@@ -1,5 +1,6 @@
 #include "4.2.h"
 #include "controls.hh"
+#include "fan.hh"
 
 const byte ROWS = 4;
 const byte COLS = 4;
@@ -25,66 +26,71 @@ char hexaKeys[ROWS][COLS] = {
 void vTaskKeypad(void * pvParameters) {
     vTaskDelay(pdMS_TO_TICKS(100));
     // setup
-    ServoCommand cmd;
+    ServoCommand servCmd;
+    FanCommand fanCmd;
 
     Keypad customKeypad = Keypad(makeKeymap(hexaKeys), (byte *) rowPins, (byte *) colPins, ROWS, COLS);
 
     // poll forever
     for(;;) {
-        cmd = NONE;
+        servCmd = NONE;
         char key = customKeypad.getKey();
         switch(key) {
             case '5':
                 // reset position
                 if (mode) {
-                    cmd = RESET;
-                    xQueueSendToBack(ServoCommandQueue, &cmd, 0);
+                    servCmd = SERV_RESET;
+                    xQueueSendToBack(ServoCommandQueue, &servCmd, 0);
+                    fanCmd = FAN_RESET;
+                    xQueueSendToBack(FanCommandQueue, &fanCmd, 0);
                 }
                 break;
 
             case '2':
                 // in
                 if (mode) {
-                    cmd = IN;
-                    xQueueSendToBack(ServoCommandQueue, &cmd, 0);
+                    servCmd = IN;
+                    xQueueSendToBack(ServoCommandQueue, &servCmd, 0);
                 }
                 break;
 
             case '8':
                 // out
                 if (mode) {
-                    cmd = OUT;
-                    xQueueSendToBack(ServoCommandQueue, &cmd, 0);
+                    servCmd = OUT;
+                    xQueueSendToBack(ServoCommandQueue, &servCmd, 0);
                 }
                 break;
 
             case '4':
                 // left
                 if (mode) {
-                    cmd = LEFT;
-                    xQueueSendToBack(ServoCommandQueue, &cmd, 0);
+                    servCmd = LEFT;
+                    xQueueSendToBack(ServoCommandQueue, &servCmd, 0);
                 }
                 break;
 
             case '6':
                 // right
                 if (mode) {
-                    cmd = RIGHT;
-                    xQueueSendToBack(ServoCommandQueue, &cmd, 0);
+                    servCmd = RIGHT;
+                    xQueueSendToBack(ServoCommandQueue, &servCmd, 0);
                 }
                 break;
 
             case '*':
                 // slower
                 if (mode) {
-
+                    fanCmd = SLOWER;
+                    xQueueSendToBack(FanCommandQueue, &fanCmd, 0);
                 }
                 break;
 
             case '#':
                 // faster
                 if (mode) {
-
+                    fanCmd = FASTER;
+                    xQueueSendToBack(FanCommandQueue, &fanCmd, 0);
                 }
                 break;
 
@@ -110,7 +116,7 @@ void vTaskKeypad(void * pvParameters) {
 void vNoiseSensorControl(void * pvParameters) {
     int max = -1;
     for (;;) {
-        if (mode != 0) vTaskDelay(pdMS_TO_TICKS(200));
+        if (mode) vTaskDelay(pdMS_TO_TICKS(200));
         else {
             uint readVal;
             for (int i = 0; i < 5; i++) {
@@ -123,9 +129,9 @@ void vNoiseSensorControl(void * pvParameters) {
                 max = readVal > max ? readVal : max;
                 vTaskDelay(pdMS_TO_TICKS(40)); // create variable
             }
-            // send read value to servo pwm
+            // send read value to fan pwm
             double sendVal = (readVal - 5)/600.0 > 1 ? 1 : (readVal - 5)/600.0;
-
+            xQueueSend(FanPWMQueue, &sendVal, 0);
         }
     }
 }

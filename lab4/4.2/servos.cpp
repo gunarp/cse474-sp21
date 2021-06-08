@@ -46,7 +46,7 @@ void vTaskServo(void * pvParameters) {
             valueH = min(valueH + STEP, MAXPWM);
             break;
 
-        case RESET:
+        case SERV_RESET:
             valueV = CENTERPWM;
             valueH = CENTERPWM;
             break;

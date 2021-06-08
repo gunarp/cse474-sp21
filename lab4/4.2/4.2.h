@@ -5,7 +5,10 @@
 #include <queue.h>
 #include "servos.hh"
 #include "controls.hh"
+#include "fan.hh"
 
 extern QueueHandle_t ServoCommandQueue;
+extern QueueHandle_t FanCommandQueue;
+extern QueueHandle_t FanPWMQueue;
 
 #endif  // PROJ_H_

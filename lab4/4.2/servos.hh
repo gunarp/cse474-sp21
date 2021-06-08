@@ -1,8 +1,9 @@
+#ifndef SERVO_H_
+#define SERVO_H_
+
 #include <Arduino.h>
 #include <Arduino_FreeRTOS.h>
 #include <queue.h>
-#ifndef SERVO_H_
-#define SERVO_H_
 
 // pins to operate servos with
 #define HSERVPIN 7
@@ -14,7 +15,7 @@
 #define MAXPWM 1530
 #define CENTERPWM 1430
 
-enum ServoCommand {NONE, RESET, IN, OUT, LEFT, RIGHT};
+enum ServoCommand {NONE, SERV_RESET, IN, OUT, LEFT, RIGHT};
 
 // set up servo pins and control queue
 void vServoSetup();

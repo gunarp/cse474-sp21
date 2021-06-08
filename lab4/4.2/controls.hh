@@ -1,13 +1,10 @@
+#ifndef CONTROLS_H_
+#define CONTROLS_H_
+
 #include <Arduino.h>
 #include <Key.h>
 #include <Keypad.h>
 
-#ifndef CONTROLS_H_
-#define CONTROLS_H_
-
-// ============================================
-// Keypad.ino
-// ============================================
 
 
 // task for keypad
