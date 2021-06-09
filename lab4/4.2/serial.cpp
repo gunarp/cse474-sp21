@@ -1,7 +1,7 @@
 /**
  * @file serial.cpp
  * @author your name (you@domain.com)
- * @brief
+ * @brief Serial Watchdog code
  * @version 0.1
  * @date 2021-06-08
  *

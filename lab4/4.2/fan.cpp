@@ -1,6 +1,25 @@
+/**
+ * @file fan.cpp
+ * @authors Peter Gunarso, Sunny Hu
+ * @brief Fan Controlling Tasks
+ * @version 0.1
+ * @date 2021-06-08
+ *
+ * @copyright Copyright (c) 2021
+ *
+ */
 #include "fan.hh"
 
+/**
+ * @brief Actual Instantiation of the FanCommandQueue, which holds #FanCommand
+ *
+ */
 QueueHandle_t FanCommandQueue;
+
+/**
+ * @brief Actual instantiation of FanPWMQueue, delivers pwms to vTaskFanAnalog.
+ *
+ */
 QueueHandle_t FanPWMQueue;
 
 void vTaskFanDigitial(void * pvParameters) {
