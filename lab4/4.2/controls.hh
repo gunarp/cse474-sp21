@@ -41,7 +41,7 @@ void vNoiseSensorControl(void * pvParameters);
  *        When the LED flashes red, the system is in the voice control mode.
  *        When the LED flashes green, the system is in the keypad control mode.
  *
- * @author Sunny Hu
+ * @author Muhammad A., Sunny Hu
  *
  * @param pvParameters
  */
@@ -50,7 +50,7 @@ void TaskRGB(void *pvParameters);
 /**
  * @brief Helper function which sets the PWM of the RGB LED
  *
- * @author Sunny Hu
+ * @author Muhammad A., Sunny Hu
  *
  * @param red_light_value red light pwm
  * @param green_light_value green light pwm
