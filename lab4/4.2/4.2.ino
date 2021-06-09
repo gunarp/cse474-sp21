@@ -1,3 +1,13 @@
+/**
+ * @file 4.2.ino
+ * @author your name (you@domain.com)
+ * @brief
+ * @version 0.1
+ * @date 2021-06-08
+ *
+ * @copyright Copyright (c) 2021
+ *
+ */
 #include "4.2.h"
 
 void TaskBlink(void *);
@@ -20,8 +30,10 @@ void setup() {
 
     TaskHandle_t NoiseControl;
     xTaskCreate(vNoiseSensorControl, "Noise Sensor Controller", 128, NULL, 2, &NoiseControl);
-    xTaskCreate(vTaskSerial, "Serial Watchdog", 128, NULL, 0, NULL);
-    xTaskCreate(vTaskKeypad, "Keypad and State Manager", 270, &NoiseControl, 3, NULL);
+    TaskHandle_t SerialWatchdog;
+    xTaskCreate(vTaskSerial, "Serial Watchdog", 128, NULL, 0, &SerialWatchdog);
+    void * params[2] = {NoiseControl, SerialWatchdog};
+    xTaskCreate(vTaskKeypad, "Keypad and State Manager", 270, params, 3, NULL);
 
 
     delay(500);

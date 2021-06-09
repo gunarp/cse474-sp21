@@ -1,5 +1,19 @@
+/**
+ * @file servos.cpp
+ * @authors Peter Gunarso, Sunny Hu
+ * @brief Servo controlling code
+ * @version 0.1
+ * @date 2021-06-08
+ *
+ * @copyright Copyright (c) 2021
+ *
+ */
 #include "servos.hh"
 
+/**
+ * @brief Actual Instantiation of the ServoCommandQueue, holds 1 #ServoCommand.
+ *
+ */
 QueueHandle_t ServoCommandQueue;
 
 void vServoSetup() {

@@ -14,7 +14,7 @@ int blue_light_pin = 23;
 
 // 0 = voice
 // 1 = control
-static int mode;
+int mode;
 
 char hexaKeys[ROWS][COLS] = {
   {'1', '2', '3', 'A'},
@@ -97,7 +97,8 @@ void vTaskKeypad(void * pvParameters) {
             case 'A':
                 // voice mode
                 if (mode) {
-                    xTaskNotify(*(TaskHandle_t *) pvParameters, 0, eNoAction);
+                    xTaskNotify(((TaskHandle_t *) pvParameters)[0], 0, eNoAction);
+                    xTaskNotify(((TaskHandle_t *) pvParameters)[1], 0, eNoAction);
                     mode = 0;
                 }
                 break;
@@ -132,6 +133,7 @@ void vNoiseSensorControl(void * pvParameters) {
                 max = readVal > max ? readVal : max;
                 vTaskDelay(pdMS_TO_TICKS(40)); // create variable
             }
+            if (max < 40) max = 0;
             // send read value to fan pwm
             int val = map(max, 0, 200, 0, 255);
             xQueueSend(FanPWMQueue, &val, 0);

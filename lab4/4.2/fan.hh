@@ -4,7 +4,7 @@
 #include "4.2.h"
 
 #define FANPIN 12
-#define MINFANPWM 30
+#define MINFANPWM 0
 #define MAXFANPWM 255
 #define FANSTEP 15
 

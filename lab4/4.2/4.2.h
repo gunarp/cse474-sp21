@@ -11,5 +11,6 @@
 extern QueueHandle_t ServoCommandQueue;
 extern QueueHandle_t FanCommandQueue;
 extern QueueHandle_t FanPWMQueue;
+extern int mode;
 
 #endif  // PROJ_H_
