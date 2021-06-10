@@ -18,6 +18,10 @@
 #include "fan.hh"
 #include "serial.hh"
 
+#define SERIALDELAY 200
+#define KEYPADDELAY 20
+#define SENSORPERIOD 40
+
 /**
  * @brief Allow any cpp files who include this header file to access the ServoCommandQueue
  *

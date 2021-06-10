@@ -112,7 +112,7 @@ void vTaskKeypad(void * pvParameters) {
                 // don't handle other buttons
                 break;
         }
-        vTaskDelay(pdMS_TO_TICKS(20));
+        vTaskDelay(pdMS_TO_TICKS(KEYPADDELAY));
     }
     vTaskDelete(NULL);
 }
@@ -131,12 +131,13 @@ void vNoiseSensorControl(void * pvParameters) {
 
                 // set max val
                 max = readVal > max ? readVal : max;
-                vTaskDelay(pdMS_TO_TICKS(40)); // create variable
+                vTaskDelay(pdMS_TO_TICKS(SENSORPERIOD)); // create variable
             }
             if (max < 40) max = 0;
+            if (max > 200) max = 200;
             // send read value to fan pwm
             int val = map(max, 0, 200, 0, 255);
-            xQueueSend(FanPWMQueue, &val, 0);
+            if (!mode) xQueueSendToBack(FanPWMQueue, &val, 0);
         }
     }
 }

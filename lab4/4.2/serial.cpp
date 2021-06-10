@@ -21,8 +21,8 @@ void vTaskSerial(void * pvParameters) {
         if (mode) xTaskNotifyWait(0x00, 0xffffffff, NULL, portMAX_DELAY);
         if (Serial.available()) {
             cmd = (ServoCommand) Serial.readString().toInt();
-            xQueueSendToBack(ServoCommandQueue, &cmd, 0);
+            if (!mode) xQueueSendToBack(ServoCommandQueue, &cmd, 0);
         }
-        vTaskDelay(pdMS_TO_TICKS(200));
+        vTaskDelay(pdMS_TO_TICKS(SERIALDELAY));
     }
 }

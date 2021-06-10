@@ -32,7 +32,7 @@ with sr.Microphone() as src:
         try:
             # Listen for a command
             r.adjust_for_ambient_noise(src)
-            print("say something")
+            print("\nsay something")
             audio = r.listen(src)
             command = r.recognize_google(audio) # recognition using the google speech api
             print(command)

@@ -19,7 +19,7 @@
 #define HSERVPIN 7
 #define VSERVPIN 6
 // degrees to move per command
-#define STEP 10
+#define STEP 25
 
 #define MINPWM 1330
 #define MAXPWM 1530
